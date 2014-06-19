@@ -3,5 +3,10 @@ For a high level overview, please read the following paper:
 Abhishek Anand and Vincent Rahli. A Generic Approach to Proofs about Substitution. LFMTP 2014
 http://www.nuprl.org/html/CFGVLFMTP2014/CFGV.pdf
 
+If you have any question, comment, or you run into an issue,
+please feel free to create an issue at:
+https://github.com/aa755/CFGV/issues
+I'll try to respond as quickly as possible.
+Your feedback is very welcome.
+
 If this library was useful in your work, please consider citing the above paper.
-Feel free to send questions to abhishek.anand.iitg@gmail.com
