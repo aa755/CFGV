@@ -1,0 +1,31 @@
+The Coq Proof Assistant, version 8.4pl2 (June 2014)
+compiled on Jun 05 2014 14:18:27 with OCaml 4.01.0
+make: Entering directory `/media/abhishek/Data/nuprl/coq/nbind/CFGVSources'
+coqc universe.v
+coqc LibTactics.v
+coqc eq_rel.v
+Identifier '__' now a keyword
+Identifier '___' now a keyword
+Identifier 'Register' now a keyword
+Identifier 'nosimpl' now a keyword
+coqc tactics.v
+Identifier 'Something' now a keyword
+coqc UsefulTypes.v
+coqc bin_rels.v
+coqc list.v
+coqc variables.v
+coqc AssociationList.v
+coqc GVariables.v
+coqc CFGV.v
+coqc Term.v
+coqc Swap.v
+coqc LetrecEx.v
+coqc SubstAux.v
+coqc AlphaEquality.v
+coqc SwapProps.v
+coqc AlphaEqProps.v
+coqc AlphaRen.v
+coqc SubstAuxAlphaEq.v
+coqc AlphaDecider.v
+coqc SSubst.v
+make: Leaving directory `/media/abhishek/Data/nuprl/coq/nbind/CFGVSources'
