@@ -1,12 +1,36 @@
-For a high level overview, please read the following paper:
+This library aims to alleviate the burden of
+reasoning of substitution and alpha equality when formalizing
+languages with binders in a nominal style.
+By nominal style, I mean that bound variables have names.
 
-Abhishek Anand and Vincent Rahli. A Generic Approach to Proofs about Substitution. LFMTP 2014
+Like Ott[1], the input to this library is a Context Free Grammar annotated
+with Variable binding information.
+However, there is no external "code-generation" step to get Coq code from the input.
+The input specification language itself is formalized as a record type (CFGV)
+in Coq.
+So, the input grammar is specified in Coq
+as a member of the CFGV type.
+The rest of this library is parametrized by a CFGV.
+This includes definition of terms, alpha equality, substitution, free variables
+and many proofs about them.
+Once you construct a member of our CFGV type that corresponds
+to your language, you
+can instantiate this library with this member to get the
+above mentioned definitions and proofs for free.
+
+More information is available in the following paper:
+Abhishek Anand and Vincent Rahli. "A Generic Approach to Proofs about Substitution". LFMTP 2014
 http://www.nuprl.org/html/CFGVLFMTP2014/CFGV.pdf
+
+The Coq sources are available on github:
+https://github.com/aa755/CFGV
 
 If you have any question, comment, or you run into an issue,
 please feel free to create an issue at:
 https://github.com/aa755/CFGV/issues
 I'll try to respond as quickly as possible.
 Your feedback is very welcome.
+
+[1] : Sewell, Peter, Francesco Zappa Nardelli, Scott Owens, Gilles Peskine, Thomas Ridge, Susmit Sarkar, and Rok StrnišA. 2010. “Ott: Effective Tool Support for the Working Semanticist.” JFP 20 (01): 71. doi:10.1017/S0956796809990293.
 
 If this library was useful in your work, please consider citing the above paper.
