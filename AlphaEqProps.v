@@ -1316,7 +1316,8 @@ Proof.
   pose proof (swapVarInOrEq2 [(v,vn)] a) as Hs.
   rewrite <- Hin0 in Hs.
   clear Hin0.
-  dimp Hs; simpl; cpx;
+  dimp Hs; simpl; cpx; try (constructor; auto; cpx; fail);
+
   [|]; cpx;
   repeat (disjoint_reasoning);cpx.
   introv Hc. dorn Hc; cpx.

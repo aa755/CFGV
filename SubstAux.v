@@ -98,23 +98,13 @@ with mSSubstAux {G : CFGV} {vc : VarSym G}
 match pts in Mixture lgs return Mixture lgs with
 | mnil  => mnil
 | mtcons _ _ ph ptl => 
-    match lbvars with
-    | [] => mtcons 
-              (tSSubstAux ph sub) 
-              (mSSubstAux ptl [] sub)
-    | lh ::ltl => mtcons
-                    (tSSubstAux ph (SubFilter sub lh))
-                    (mSSubstAux ptl ltl sub)
-    end
+              mtcons
+                    (tSSubstAux ph (SubFilter sub (lhead lbvars)))
+                    (mSSubstAux ptl (tail lbvars) sub)
 | mpcons _ _ ph ptl =>
-    match lbvars with
-    | [] => mpcons 
-              (pSSubstAux ph sub) 
-              (mSSubstAux ptl [] sub)
-    | lh ::ltl => mpcons
-                    (pSSubstAux ph (SubFilter sub lh))
-                    (mSSubstAux ptl ltl sub)
-    end
+              mpcons
+                    (pSSubstAux ph (SubFilter sub (lhead lbvars)))
+                    (mSSubstAux ptl (tail lbvars) sub)
 end.
 
 
@@ -189,19 +179,10 @@ Lemma SSubstAuxTrivial :
             -> mSSubstAux m llva sub = m)).
 Proof.
   intros.
-  apply GInduction; auto;[| | | | |];
-  try (intros; simpl; f_equal; f_equal; auto; fail);
-  [| |];
-  try( (Case "mtcons" || Case "mpcons");
-    introv Hp Hm Hdis;
-    allsimpl; destruct llva; allsimpl;
-    disjoint_reasoning; f_equal; auto;[];
-    f_equal; auto; apply Hp;
-    unfold SubFilter; rewrite <- ALDomFilterCommute;
-    unfold subtractv in Hdis0;
-    apply disjoint_diff_l;
-    auto; fail);[].
+  GInduction; auto;[| | | | |];
+  try (intros; simpl; f_equal; f_equal; auto; fail);  [| |].
 
+  - Case "vleaf".
     introv Hdis. simpl. rename vc0 into vcc.
     destruct_head_match; auto;[].
     subst vcc.
@@ -213,6 +194,28 @@ Proof.
     apply Hdis.
     apply ALInEta in l.
     repnd; auto.
+
+  - Case "mtcons".
+    introv Hp Hm Hdis.
+    allsimpl. unfold SubFilter. 
+    allsimpl;
+    disjoint_reasoning; f_equal; auto.
+    f_equal; auto; apply Hp;
+    rewrite <- ALDomFilterCommute;
+    unfold subtractv in Hdis0;
+    apply disjoint_diff_l;
+    auto.
+
+  - Case "mpcons".
+    introv Hp Hm Hdis.
+    allsimpl. unfold SubFilter. 
+    allsimpl;
+    disjoint_reasoning; f_equal; auto.
+    f_equal; auto; apply Hp;
+    rewrite <- ALDomFilterCommute;
+    unfold subtractv in Hdis0;
+    apply disjoint_diff_l;
+    auto.
 Qed.
 
 Corollary SSubstAuxNilNoChange :
@@ -249,30 +252,45 @@ Lemma SSubstAuxSubFilter:
           = mSSubstAux m llva (SubFilter sub lf))).
 Proof.
   intros.
-  apply GInduction; auto;[| | | | |];
-  try(intros; allsimpl;  f_equal; apply H; auto);[ | | ];
-  try(introv Hp Hm Hdis;
-    allsimpl; destruct llva; allsimpl;
-    disjoint_reasoning;f_equal; auto;[];
-    unfold SubFilter;
-    rw ALFilterSwap;
-    rw <- ALFilterAppR;
-    rw ALFilterAppAsDiff;
-    rw ALFilterAppR; unfold subtractv in Hdis0;
-    apply Hp; rw disjoint_diff_l in Hdis0; auto;fail);[].
-  - introv Hdis. simpl. rename vc0 into vcc.
-    destruct_head_match; auto;[].
-    subst vcc.
-    simpl. allunfold ALFindDef.
-    remember (ALFind (DeqVtype vc) (SubFilter sub lf) v) as alf.
-    destruct alf as [als | aln].
-    + applysym AssociationList.ALFindFilterSome in Heqalf.
-      repnd. rw Heqalf0; auto.
-    + applysym AssociationList.ALFindFilterNone in Heqalf.
-      dorn Heqalf.
-      * rw Heqalf; auto.
-      * simpl in Hdis. rewrite DeqTrue in Hdis.
-        simpl in Hdis. disjoint_reasoning.
+  GInduction; auto;[| | | | |];
+  try(intros; allsimpl;  f_equal; apply H; auto);[ | | ].
+
+- Case "vleaf".
+  introv Hdis. simpl. rename vc0 into vcc.
+  destruct_head_match; auto;[].
+  subst vcc.
+  simpl. allunfold ALFindDef.
+  remember (ALFind (DeqVtype vc) (SubFilter sub lf) v) as alf.
+  destruct alf as [als | aln].
+  + applysym AssociationList.ALFindFilterSome in Heqalf.
+    repnd. rw Heqalf0; auto.
+  + applysym AssociationList.ALFindFilterNone in Heqalf.
+    dorn Heqalf.
+    * rw Heqalf; auto.
+    * simpl in Hdis. rewrite DeqTrue in Hdis.
+      simpl in Hdis. disjoint_reasoning.
+
+- Case "mtcons".
+  introv Hp Hm Hdis.
+  allsimpl. unfold SubFilter. 
+  rw ALFilterSwap.
+  rw <- ALFilterAppR.
+  rw ALFilterAppAsDiff.
+  disjoint_reasoning.
+  rw ALFilterAppR; unfold subtractv in Hdis0.
+  f_equal; try apply Hp; try apply Hm; auto.
+  rw disjoint_diff_l in Hdis0; auto;fail.
+
+- Case "mpcons".
+  introv Hp Hm Hdis.
+  allsimpl. unfold SubFilter. 
+  rw ALFilterSwap.
+  rw <- ALFilterAppR.
+  rw ALFilterAppAsDiff.
+  disjoint_reasoning.
+  rw ALFilterAppR; unfold subtractv in Hdis0.
+  f_equal; try apply Hp; try apply Hm; auto.
+  rw disjoint_diff_l in Hdis0; auto;fail.
 Qed.
 
 Lemma SSubstAuxBVarsDisjoint: 
@@ -302,14 +320,14 @@ Proof.
   apply ALInEta in h0; cpx.
 
 - Case "mtcons".
-  introv Hypt Hypm H1d H2d. allsimpl. destruct llva; allsimpl; cpx;
+  introv Hypt Hypm H1d H2d. allsimpl.  allsimpl; cpx;
   repeat(disjoint_reasoning).
   apply Hypt; repeat(disjoint_reasoning).
   clear H1d H1d0.
   unfold SubFilter. SetReasoning.
 
 - Case "mpcons".
-  introv Hypt Hypm H1d H2d. allsimpl. destruct llva; allsimpl; cpx;
+  introv Hypt Hypm H1d H2d. allsimpl. allsimpl; cpx;
   repeat(disjoint_reasoning).
   apply Hypt; repeat(disjoint_reasoning).
   clear H1d H1d0.
@@ -480,7 +498,7 @@ Theorem SSubstAuxAppAwap:
 ).
 Proof.
 GInduction; allsimpl; introns Hyp; intros; allsimpl; cpx;
-try (f_equal; auto);[| |].
+try (f_equal; auto; fail);[| |].
 
 - Case "vleaf".
   simpl. rename vc0 into vcc.
@@ -494,14 +512,14 @@ try (f_equal; auto);[| |].
   allapply ALInEta; exrepnd.
   disjoint_lin_contra.
 - Case "mtcons".
-  destruct lln; allsimpl; f_equal; cpx.
+  allsimpl; f_equal; cpx.
   unfold SubFilter. allrw ALFilterAppSub.
   apply Hyp; cpx.
   apply (subset_disjointLR Hyp1);
   SetReasoning.
   (** again, exactly same as the [mtcons] case *)
 - Case "mpcons".
-  destruct lln; allsimpl; f_equal; cpx.
+  allsimpl; f_equal; cpx.
   unfold SubFilter.
   allrw ALFilterAppSub.
   apply Hyp; cpx.
@@ -564,7 +582,13 @@ Qed.
   the 2 terms will be called with same [llm]
 *)
 
-  
+Lemma tail_subset : forall {A: Type} (l: list A),
+  subset (List.tl l) l.
+Proof.
+  (destruct l; auto; simpl; SetReasoning; apply subset_cons1; auto;fail).
+Qed.
+Hint Resolve tail_subset  : SetReasoning.
+
 Theorem SSubstAuxNestAsApp:
 ( forall (s : GSym G) (nt : Term s)
   (suba subb : SSubstitution vc)
@@ -631,7 +655,7 @@ GInduction; allsimpl; introns Hyp; intros; allsimpl; cpx;
   SetReasoning.
 
 - Case "mtcons".
-  destruct llm as [| lh llm];allsimpl;f_equal;
+  allsimpl;f_equal;
   try apply Hyp;
   try apply Hyp0;
   repeat(disjoint_reasoning);
@@ -641,15 +665,14 @@ GInduction; allsimpl; introns Hyp; intros; allsimpl; cpx;
   unfold tSSubstAux_sub.
   rw ALMapRangeFilterCommute.
   rw <- tSSubstAuxSubUnfold.
-  rewrite <- tSSubstAuxSubFilter with (lv:=lh);
-  repeat(disjoint_reasoning);
-  SetReasoning.
+  rewrite <- tSSubstAuxSubFilter with (lv:=lhead llm);
+  [|  destruct llm; allsimpl; repeat(disjoint_reasoning); auto; SetReasoning].
   apply Hyp.
   repeat(disjoint_reasoning);
   SetReasoning.
 
 - Case "mpcons".
-  destruct llm as [| lh llm];allsimpl;f_equal;
+  allsimpl;f_equal;
   try apply Hyp;
   try apply Hyp0;
   repeat(disjoint_reasoning);
@@ -659,13 +682,11 @@ GInduction; allsimpl; introns Hyp; intros; allsimpl; cpx;
   unfold tSSubstAux_sub.
   rw ALMapRangeFilterCommute.
   rw <- tSSubstAuxSubUnfold.
-  rewrite <- tSSubstAuxSubFilter with (lv:=lh);
-  repeat(disjoint_reasoning);
-  SetReasoning.
+  rewrite <- tSSubstAuxSubFilter with (lv:=lhead llm);
+  [|  destruct llm; allsimpl; repeat(disjoint_reasoning); auto; SetReasoning].
   apply Hyp.
   repeat(disjoint_reasoning);
   SetReasoning.
-
 Qed.
 
 
@@ -750,6 +771,13 @@ Proof.
 Qed.
 
 
+Lemma disjoint_flatten_tl: forall {A : Type} (la : list (list A)) (lb : list A),
+  disjoint (flatten (la)) lb
+  -> disjoint (flatten (List.tl la)) lb.
+Proof.
+  intros.
+  SetReasoning.
+Qed.
 
 
 Theorem free_vars_SSubstAux:
@@ -833,43 +861,19 @@ unfold SubKeepFirst.
   apply Hyp.
   simpl. autorewrite with fast.
   cpx.
-- Case "mtcons". destruct llva as [| llh llva];
-   simpl; cpx; unfold subtractv;
+- Case "mtcons".
+   cpx; unfold subtractv;
    allrw diff_app_r; allsimpl.
-  + split.
-    * introv Hin; allrw in_app_iff;
-      dorn Hin; try (apply Hyp0 in Hin);
-      try (apply Hyp in Hin);
-      try(rw in_app_iff in Hin); try(dorn Hin);cpx;
-      try (apply in_diff in Hin); exrepnd; cpx;
-      allsimpl; autorewrite with fast;
-      repeat(disjoint_reasoning);[|];
-      right; eauto with slow.
-    * introv Hin; allrw in_app_iff.
-      dorn Hin;[dorn Hin;[left|right]|];
-      try apply Hyp0;
-      try apply Hyp;
-      allrw in_app_iff; 
-      allsimpl; autorewrite with fast;
-      repeat(disjoint_reasoning);
-      cpx;[].
-      apply rangeFreeVarsKeepFirstAppImplies
-      in Hin.
-      dorn Hin;[left|right];
-      try apply Hyp0;
-      try apply Hyp;
-      allrw in_app_iff;allsimpl; autorewrite with fast;
-      repeat(disjoint_reasoning);
-      cpx; right; cpx.
-
   + split. 
     * introv Hin. allrw in_app_iff.
 
       dorn Hin;[ |  apply Hyp0 in Hin;[|];
-                    repeat (disjoint_reasoning);[];
-                    rw in_app_iff in Hin;
+                    repeat (disjoint_reasoning);
+                    [| apply disjoint_flatten_tl; trivial];
+                    (rw in_app_iff in Hin;
                     dorn Hin; cpx;[];  
-                    right; apply rangeFreeVarsKeepFirstAppR; cpx].
+                    right; apply rangeFreeVarsKeepFirstAppR; cpx)].
+  
       rw in_diff in Hin; exrepnd.
       apply Hyp in Hin0;
       allrw in_app_iff; exrepnd;
@@ -911,7 +915,8 @@ unfold SubKeepFirst.
 
       allrw in_diff. right.
       exrepnd; cpx.
-      apply Hyp0;repeat(disjoint_reasoning).
+      apply Hyp0;repeat(disjoint_reasoning);
+                    [apply disjoint_flatten_tl; trivial|];
       allrw in_diff. allrw in_app_iff.
       allrw in_diff.
       left; cpx; fail.
@@ -930,60 +935,36 @@ unfold SubKeepFirst.
       rw ALKeepFirstFilterDiff.
       eauto.
 
-      repeat(disjoint_reasoning).
+      destruct llva; allsimpl; repeat(disjoint_reasoning).
       apply Hyp3 in X.
       apply X. SetReasoning; fail.
 
 
-      apply Hyp0;repeat(disjoint_reasoning);[].
+      apply Hyp0;repeat(disjoint_reasoning);[apply disjoint_flatten_tl; trivial|].
       allrw in_app_iff.
       allrw in_diff.
       right.
       auto.
-(** exactly same as the mtcons case *)
-- Case "mpcons". destruct llva as [| llh llva];
-   simpl; cpx; unfold subtractv;
-   allrw diff_app_r; allsimpl.
-  + split.
-    * introv Hin; allrw in_app_iff;
-      dorn Hin; try (apply Hyp0 in Hin);
-      try (apply Hyp in Hin);
-      try(rw in_app_iff in Hin); try(dorn Hin);cpx;
-      try (apply in_diff in Hin); exrepnd; cpx;
-      allsimpl; autorewrite with fast;
-      repeat(disjoint_reasoning);[|];
-      right; eauto with slow.
-    * introv Hin; allrw in_app_iff.
-      dorn Hin;[dorn Hin;[left|right]|];
-      try apply Hyp0;
-      try apply Hyp;
-      allrw in_app_iff; 
-      allsimpl; autorewrite with fast;
-      repeat(disjoint_reasoning);
-      cpx;[].
-      apply rangeFreeVarsKeepFirstAppImplies
-      in Hin.
-      dorn Hin;[left|right];
-      try apply Hyp0;
-      try apply Hyp;
-      allrw in_app_iff;allsimpl; autorewrite with fast;
-      repeat(disjoint_reasoning);
-      cpx; right; cpx.
 
+- Case "mpcons". (** exactly same as the mtcons case *)
+   cpx; unfold subtractv;
+   allrw diff_app_r; allsimpl.
   + split. 
     * introv Hin. allrw in_app_iff.
 
       dorn Hin;[ |  apply Hyp0 in Hin;[|];
-                    repeat (disjoint_reasoning);[];
-                    rw in_app_iff in Hin;
+                    repeat (disjoint_reasoning);
+                    [| apply disjoint_flatten_tl; trivial];
+                    (rw in_app_iff in Hin;
                     dorn Hin; cpx;[];  
-                    right; apply rangeFreeVarsKeepFirstAppR; cpx].
+                    right; apply rangeFreeVarsKeepFirstAppR; cpx)].
+  
       rw in_diff in Hin; exrepnd.
       apply Hyp in Hin0;
       allrw in_app_iff; exrepnd;
       allrw in_app_iff;allsimpl; autorewrite with fast;
       repeat (disjoint_reasoning); 
-      unfold SubFilter;try SetReasoning;[|].
+      unfold SubFilter; try SetReasoning;[| ].
 
 
 
@@ -1004,23 +985,23 @@ unfold SubKeepFirst.
       dorn Hin;[dorn Hin|];[ | | ].
 
       left. allrw in_diff. exrepnd.
-      dands; cpx;[].
+      dands; cpx;[]. unfold SubFilter.
       apply Hyp. 
 
 
-      repeat(disjoint_reasoning);
-      unfold SubFilter; SetReasoning.
+      repeat(disjoint_reasoning); SetReasoning.
 
       allrw in_app_iff.
       left. allrw in_diff. exrepnd.
-      dands; cpx;[]. unfold SubFilter.
+      dands; cpx;[].
       rw <- ALDomFilterCommute.
       rw in_diff. introv Hc.
       apply Hin. exrepnd. cpx; fail.
 
       allrw in_diff. right.
       exrepnd; cpx.
-      apply Hyp0;repeat(disjoint_reasoning).
+      apply Hyp0;repeat(disjoint_reasoning);
+                    [apply disjoint_flatten_tl; trivial|];
       allrw in_diff. allrw in_app_iff.
       allrw in_diff.
       left; cpx; fail.
@@ -1031,7 +1012,7 @@ unfold SubKeepFirst.
       allrw in_diff.
       dands; cpx.
       apply Hyp;[repeat(disjoint_reasoning);
-      unfold SubFilter;SetReasoning; fail|].
+      unfold SubFilter; SetReasoning; fail|].
 
       allrw in_app_iff.
       allrw in_diff.
@@ -1039,12 +1020,12 @@ unfold SubKeepFirst.
       rw ALKeepFirstFilterDiff.
       eauto.
 
-      repeat(disjoint_reasoning).
+      destruct llva; allsimpl; repeat(disjoint_reasoning).
       apply Hyp3 in X.
       apply X. SetReasoning; fail.
 
 
-      apply Hyp0;repeat(disjoint_reasoning);[].
+      apply Hyp0;repeat(disjoint_reasoning);[apply disjoint_flatten_tl; trivial|].
       allrw in_app_iff.
       allrw in_diff.
       right.

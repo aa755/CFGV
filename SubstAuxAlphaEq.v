@@ -233,8 +233,11 @@ GInduction; introns Hyp; allsimpl; cpx; try (intros; f_equal; cpx; fail).
 - Case "mtcons".
   intros.
   rename tb into lvb.
-  destruct lvb; allsimpl; f_equal; cpx;
-    [rw Hyp0; simpl; cpx|].
+  allsimpl; rewrite 
+    <- lheadEquivariant; 
+  rewrite 
+    <- tailEquivariant;
+  f_equal; cpx.
   rw Hyp. f_equal.
   symmetry.
   apply swapSubFilterCommute.
@@ -242,8 +245,11 @@ GInduction; introns Hyp; allsimpl; cpx; try (intros; f_equal; cpx; fail).
 - Case "mpcons".
   intros.
   rename tb into lvb.
-  destruct lvb; allsimpl; f_equal; cpx;
-    [rw Hyp0; simpl; cpx|].
+  allsimpl; rewrite 
+    <- lheadEquivariant; 
+  rewrite 
+    <- tailEquivariant;
+  f_equal; cpx.
   rw Hyp. f_equal.
   symmetry.
   apply swapSubFilterCommute.
@@ -313,18 +319,14 @@ Proof.
   rewrite <- lBoundVarsSameSSubstAux.
   cpx.
 
-- Case "mtcons". destruct lbv; cpx.
-  + allsimpl. constructor; cpx.
-    eauto with Alpha.
-  + allsimpl. constructor; cpx.
+- Case "mtcons". cpx.
+  allsimpl. constructor; cpx.
     apply AlphaEqNilAbsT.
     apply Hyp. apply ALRangeRelFilter.
     trivial.
 
-- Case "mpcons". destruct lbv; cpx.
-  + allsimpl. constructor; cpx.
-    eauto with Alpha.
-  + allsimpl. constructor; cpx.
+- Case "mpcons". cpx.
+     allsimpl. constructor; cpx.
     apply AlphaEqNilAbsP.
     apply Hyp. apply ALRangeRelFilter.
     trivial.

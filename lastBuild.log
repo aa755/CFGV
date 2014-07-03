@@ -1,6 +1,3 @@
-The Coq Proof Assistant, version 8.4pl2 (June 2014)
-compiled on Jun 05 2014 14:18:27 with OCaml 4.01.0
-make: Entering directory `/media/abhishek/Data/nuprl/coq/nbind/CFGVSources'
 coqc universe.v
 coqc LibTactics.v
 coqc eq_rel.v
@@ -28,4 +25,3 @@ coqc AlphaRen.v
 coqc SubstAuxAlphaEq.v
 coqc AlphaDecider.v
 coqc SSubst.v
-make: Leaving directory `/media/abhishek/Data/nuprl/coq/nbind/CFGVSources'
