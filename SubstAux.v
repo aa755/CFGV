@@ -72,10 +72,7 @@ match pt in Term gs return Term gs with
                             (vleaf vcc var) (* default value*)
                      | right _ => (vleaf vcc var)
                      end
-| tnode p mix => tnode p (mSSubstAux  
-                          mix
-                          (lBoundVars vc (bndngPatIndices p ) mix) 
-                          sub) 
+| tnode p mix => tnode p (mSSubstAux  mix (allBndngVars vc p mix) sub) 
 end
 with pSSubstAux {G : CFGV} {vc : VarSym G}
   {gs : (GSym G)} (pt : Pattern gs)
@@ -643,7 +640,8 @@ GInduction; allsimpl; introns Hyp; intros; allsimpl; cpx;
     cpx.
 
 - Case "tnode".
-  f_equal. rw <- lBoundVarsSameSSubstAux.
+  f_equal. unfold allBndngVars.
+  rw <- lBoundVarsSameSSubstAux.
   apply Hyp.
   repeat(disjoint_reasoning);[].
   SetReasoning.

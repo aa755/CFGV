@@ -225,6 +225,7 @@ GInduction; introns Hyp; allsimpl; cpx; try (intros; f_equal; cpx; fail).
 
 - Case "tnode".
   intros. simpl. f_equal.
+  unfold allBndngVars.
   rewrite lBoundVars_swap. apply Hyp.
 
 - Case "pnode".
