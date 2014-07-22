@@ -561,54 +561,14 @@ Proof.
   destruct (decideAbsP vc ph Hyp h p lha lhb);
     [left; constructor; auto| right; notAlpha].
 Defined.
- 
-(*
-Definition transpEm {G} {pl pr : EmbedProd G}
-  (eqq : pl = pr)
-  (tl : Term (gsymTN (epRhs G pl))) :=
-(@transport _ _ _ (fun p => Term (gsymTN (epRhs G p)))  eqq tl).
 
-Fixpoint tAlphaEqb {G} (vc : VarSym G) {gs : GSym G}
-  (tl tr : Term gs) {struct tr}: bool :=
-match (tl,tr) with
-| (tnode pl ml, tnode pr mr) => true
-| (tleaf tcl tl, tleaf tcr tr) 
-    => Deq2Bool (deqSigTSemType) 
-          (existT _ tcl tl) (existT _ tcr tr)
-| (vleaf tcl tl, vleaf tcr tr) 
-    => Deq2Bool (deqSigVType) 
-          (existT _ tcl tl) (existT _ tcr tr)
-| _ => false
-end
-with  pAlphaEqb {G} (vc : VarSym G) {gs : GSym G}
-  (tl tr : Pattern gs) {struct tr} : bool :=
-match (tl,tr) with
-| (pnode pl ml, pnode pr mr) => true
-| (ptleaf tcl tl, ptleaf tcr tr) 
-    => Deq2Bool (deqSigTSemType) 
-          (existT _ tcl tl) (existT _ tcr tr)
-| (pvleaf tcl tl, pvleaf tcr tr) 
-    => Deq2Bool (deqSigVType) 
-          (existT _ tcl tl) (existT _ tcr tr)
-| (embed pl tl, embed pr tr) =>
-     match (deqEm G pl pr) with
-     | right _ => false
-     | left eqq => tAlphaEqb vc (transpEm eqq tl) tr
-     end
-| _ => false
-end
-with AlphaEqAbsb {G} (vc : VarSym G)
-  (tl tr : Abstraction G vc) {struct tr}: bool :=
-match (tl,tr) with
-| (termAbs gsl lvl tll, termAbs gsr lvr trr) => 
-    (beq_nat (length lvl) (length lvr)) &&
-    match (deqGSym gsl gsr) with
-    | right _ => false
-    | left eqq => tAlphaEqb vc (transport eqq tll) trr
-    end    
-| (patAbs _ lvl tl, patAbs _ lvr tr) => true
-|  _ => false
-end.
-  
+Lemma tAlphaEqDecidable : forall {G} (vc : VarSym G)
+     {s : GSym G} (ta: Term s) (tb : Term s),
+          decidable (tAlphaEqG vc ta tb).
+Proof.
+  intros. apply (tcase (alphaEqDecidable vc)).
+Defined.
 
-*)
+(** need (cnstructive) finiteness of [VarSym G] for [tAlphaEqual]
+    to be decidable *)
+    

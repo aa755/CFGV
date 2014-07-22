@@ -80,7 +80,7 @@ with pSSubstAux {G : CFGV} {vc : VarSym G}
 match pt with
 | ptleaf a v => ptleaf a v
 | pvleaf vcc var => pvleaf vcc var
-(** patterns do not have internal bindings 
+(* patterns do not have internal bindings 
     (members of [PatProd] do not specify binding info).
    Hence the [nil] *)
 | pnode p lpt => pnode p (mSSubstAux lpt [] sub)

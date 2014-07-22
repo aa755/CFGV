@@ -22,7 +22,7 @@
   Authors: Abhishek Anand & Vincent Rahli
 
 *)
-Require Export CFGV.
+Require Export AlphaDecider.
 Set Implicit Arguments.
 
 (** printing #  $\times$ #×# *)
@@ -98,32 +98,69 @@ Defined.
 
 Require Export Term.
 
-(** a representation of the term 
-  
-  letrec x:=y in z
 
-*)
-Definition letrxxx : @Term letrecCFGV (@gsymTN letrecCFGV term).
-Proof.
-  apply (@tnode letrecCFGV letr). apply (mpcons).
-  - simpl. apply (@pnode letrecCFGV aCons); simpl.
-    apply (mpcons); simpl.
-    + apply (@pnode letrecCFGV aNil). simpl. apply mnil.
-    + apply (mpcons); [| apply mnil].
-      apply (@pnode letrecCFGV asgnP). simpl.
-      apply (mpcons).
-      * apply pvleaf. simpl. exact nvarx.
-      * apply (mpcons);[| apply mnil].
-        apply (@embed letrecCFGV asgnRhsE). simpl.
-        apply (@vleaf letrecCFGV vsym).
-        exact nvary.
-  - simpl. apply (mtcons);[| apply mnil].
-    apply (@vleaf letrecCFGV vsym).
-    exact nvarz.
+(* to catch stupid errors early, it makes sense
+  first replace Notation by Definition and revert
+  back to Notation if the Definition typechecks *)
+
+Notation SYMTN := (@gsymTN letrecCFGV).
+Notation SYMPN := (@gsymPN letrecCFGV).
+Definition TERM := (Term (SYMTN  term)).
+Definition PAT p := (Pattern  (SYMPN p)).
+Notation VAR := (@vType letrecCFGV (vsym)).
+
+Definition mkAsgn : VAR -> TERM -> PAT asgn.
+  intros v t.
+  apply (@pnode letrecCFGV asgnP).
+  apply mpcons.
+  * apply pvleaf. simpl. exact v.
+  * apply (mpcons);[| apply mnil].
+    apply (@embed letrecCFGV asgnRhsE). simpl.
+    exact t.
 Defined.
 
+Definition mkLAsgn : list (PAT asgn) -> PAT lasgn.
+  intro l. induction l as [| h tl].
+  - apply (@pnode letrecCFGV aNil). simpl. apply mnil.
+  - apply (@pnode letrecCFGV aCons); simpl.
+    apply (mpcons).
+    + exact IHtl.
+    + apply (mpcons); [| apply mnil].
+      exact h.
+Defined.
+
+Definition mkLetr : list (PAT asgn) -> TERM -> TERM.
+  intros lp t.
+  apply (@tnode letrecCFGV letr). unfold tpRhsAugIsPat. simpl.
+  apply mpcons.
+  - apply mkLAsgn. exact lp.
+  - apply (mtcons);[| apply mnil]. exact t.
+Defined.
+
+Definition mkVTerm : VAR -> TERM.
+  intro v.
+  apply (@vleaf letrecCFGV vsym).
+  exact v.
+Defined.
+
+(** a representation of the term 
+    letrec x:=y in z
+*)
+
+Definition letr_xyz : TERM :=
+  mkLetr [mkAsgn nvarx (mkVTerm nvary)]  (mkVTerm nvarz).
+  
 
 
+(*
+Lemma letrxx_alpha_trivial :
+ @tAlphaEq letrecCFGV vsym _ letrxxx letrxxx.
+Proof.
+  remember (@tAlphaEqDecidable letrecCFGV vsym _ letrxxx letrxxx).
+  unfold tAlphaEqDecidable, alphaEqDecidable, GInductionS, tcase,
+  comp_ind_type in Heqd.
+  simpl in Heqd.
+*)  
 (*
 *** Local Variables:
 *** coq-load-path: ("../")

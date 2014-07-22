@@ -395,6 +395,8 @@ Ltac GAlphaInd :=
                       | Case "laCons"
 ].
 
+Definition tAlphaEqual {G : CFGV} {gs : GSym G} (ta tb : Term gs):=
+forall (vc: VarSym G), tAlphaEq vc ta tb.
 
 (*
 *** Local Variables:

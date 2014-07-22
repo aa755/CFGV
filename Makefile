@@ -2,7 +2,7 @@ all: AlphaRen.vo LetrecEx.vo SubstAuxAlphaEq.vo SSubst.vo AlphaDecider.vo
 
 
 
-AlphaDecider.vo : AlphaDecider.v AlphaEqProps.vo
+AlphaDecider.vo : AlphaDecider.v AlphaEqProps.vo 
 	coqc $<
 
 SubstAux.vo : SubstAux.v Term.vo
@@ -35,7 +35,7 @@ AlphaRen.vo:	AlphaRen.v AlphaEqProps.vo
 Term.vo:	Term.v CFGV.vo
 	coqc $<
 
-LetrecEx.vo:	LetrecEx.v Term.vo
+LetrecEx.vo:	LetrecEx.v Term.vo AlphaDecider.vo
 	coqc $<
 
 LetrecFEx.vo:	LetrecFEx.v Term.vo

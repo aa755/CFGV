@@ -516,7 +516,7 @@ Lemma SizePositive :forall  {G : CFGV},
 Proof.
   intros. 
   GInduction; intros; allsimpl; try omega.
-Qed.
+Defined.
 
 Definition mcase := snd.
 Definition tcase {A B C : Type}
@@ -524,6 +524,12 @@ Definition tcase {A B C : Type}
 Definition pcase {A B C : Type}
   := fun t:A*B*C => snd (fst t).
 
+(**
+  This lemma is used in the beginning of the proof of decidability of
+  alpha equality. So it needs to be transparent 
+  (for alpha equality decider to compute atleast to inl/inr form).
+  Hence it is a bit long in order to avoid using the omega tactic.
+*)
 Lemma GInductionS :
 forall {G: CFGV}
 (PT : forall g : GSym G, Term g -> [univ])
@@ -578,24 +584,39 @@ assert( forall n: nat,
   induction n as [n Hind] using comp_ind_type.
   GInduction; introns HGInd; allsimpl; cpx.
   - Case "pembed". apply Hyps4. specialize (Hind (tSize t)).
-    dimp Hind; try omega;[]. repnd.
-    cpx.
+    dimp Hind; [| repnd; cpx; fail].
+    rw <- HGInd0; apply lt_n_Sn; fail.
   - Case "mtcons". apply Hyps7.
     + introv Hlt.
       pose proof (mcase SizePositive _  ptl).
       specialize (Hind (tSize phnew)).
-      dimp Hind; try omega;[]. repnd. cpx.
+      dimp Hind; [| repnd; cpx; fail].
+      rw <- HGInd1;
+      rewrite (plus_n_O (tSize phnew));
+      apply plus_le_lt_compat; trivial; fail.
     + pose proof (tcase SizePositive _  ph).
       specialize (Hind (mSize ptl)).
-      dimp Hind; try omega;[]. repnd. cpx.
+      dimp Hind; [| repnd; cpx; fail].
+      rw <- HGInd1. 
+      rewrite (plus_n_O (mSize ptl)) at 1.
+      rewrite (plus_comm (tSize ph)).
+      apply plus_le_lt_compat; auto.
   - Case "mpcons". apply Hyps8.
     + introv Hlt.
       pose proof (mcase SizePositive _  ptl).
       specialize (Hind (pSize phnew)).
-      dimp Hind; try omega;[]. repnd. cpx.
+      dimp Hind; [| repnd; cpx; fail].
+      rw <- HGInd1;
+      rewrite (plus_n_O (pSize phnew));
+      apply plus_le_lt_compat; trivial; fail.
+
     + pose proof (pcase SizePositive _  ph).
       specialize (Hind (mSize ptl)).
-      dimp Hind; try omega;[]. repnd. cpx.
+      dimp Hind; [| repnd; cpx; fail].
+      rw <- HGInd1. 
+      rewrite (plus_n_O (mSize ptl)) at 1.
+      rewrite (plus_comm (pSize ph)).
+      apply plus_le_lt_compat; auto.
 Defined.
 
 
