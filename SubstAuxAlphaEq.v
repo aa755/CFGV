@@ -831,5 +831,5 @@ Lemma swapSubDisjChain :
     -> disjoint vsb (vsa ++ (allVarsSub sub))
     -> swapSub sub ((combine vsa  vs) ++  (combine vs  vsb))
        = swapSub sub (combine vsa  vsb).
-Admitted.
+Abort.
 *)

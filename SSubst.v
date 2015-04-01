@@ -226,6 +226,20 @@ Proof.
   trivial.
 Qed.
 
+
+Lemma SSubstSubRespectsAlpha : forall sa1 sb sa2,
+  sa1 === sa2 
+  -> SubstSub sa1 sb === SubstSub sa2 sb.
+Proof.
+  intros ?.
+  unfold AlphaEqSubst.
+  induction sa1 as [|(v1,t1) subl1 Hind]; intros ? ? Hals;
+  destruct 
+    sa2 as [|(v2,t2) subl2]; allsimpl;sp.
+  unfold AlphaEqSubst.
+  apply SSubstRespectsAlpha1; assumption.
+Qed.
+
 Context {gs : GSym G}
   (a: Term gs) (s :  SSubstitution vc)
   (l: list (vType vc)).
@@ -415,9 +429,9 @@ Proof.
   eapply (tcase alphaEqTransitive);
     [apply Hfs1|].
   assert (AlphaEqSubst (SubstSub sa sb ++ sb)
-                       (SubstSub sa' sb ++ sb))
-    as Hals by
-    (apply AlphaEqSubstApp;[ admit | eauto with Alpha]).
+                       (SubstSub sa' sb ++ sb)) as Hals by 
+      (apply AlphaEqSubstApp;[apply SSubstSubRespectsAlpha; assumption
+                              | eauto with Alpha]).
   apply SSubstRespectsAlpha with (a0:=a) (b:=a) in Hals;
     [|eauto with Alpha].
   apply (tcase alphaEqSym) in Hals.
@@ -461,53 +475,3 @@ Qed.
 End S1Term2Sub.
 
 End GramVC.
-
-(*
-Ltac alpharw H := let X99:= fresh "Xalrw" in
-let lhs := get_alpha_lhs H in
-match goal with 
-| [ |- tAlphaEq (tSSubst (tSSubst lhs ?sub1) ?sub2) ?rhs] => 
-    pose proof  (SSubstRespectsAlpha1 _ _ sub2 (
-      SSubstRespectsAlpha1 _ _ sub1 H)) as X99;
-    apply (ALtcase alphaEqTransitive) with (nt3:=rhs)  in X99;[exact X99;fail|clear X99]
-| [ |- tAlphaEq (tSSubst lhs ?sub) ?rhs] => pose proof  
-        (SSubstRespectsAlpha1 _ _ sub H) as X99;
-    apply (ALtcase alphaEqTransitive) 
-      with (nt3:=rhs)  in X99;[exact X99;fail|clear X99]
-| [ |- tAlphaEq lhs ?rhs ] => pose proof H as X99;
-    apply (ALtcase alphaEqTransitive) with (nt3:=rhs)  in X99;[exact X99;fail|clear X99]
-| [ |- context [ tfreevars lhs ] ] => 
-    pose proof (alpha_preserves_free_vars _ _ H) as X99;
-    rewrite X99; clear X99
-| [ |- context [ tfreevars (tSSubst lhs ?sub) ] ] => 
-    pose proof (alpha_preserves_free_vars _ _ 
-        ((SSubstRespectsAlpha1 _ _ sub H))) as X99;
-    rewrite X99; clear X99
-end.
-
-Ltac alpharwh H Hyp:=
-let lhs := get_alpha_lhs H in
-match goal with 
-[ Hyp: tAlphaEq (tSSubst lhs ?sub) ?rhs |- _] 
-    => pose proof  (SSubstRespectsAlpha1 _ _ sub H) 
-      as X99;
-      apply (tcase) in X99;
-      apply (tcase alphaEqTransitive) with (nt3:=rhs)  in X99;sp;[];
-      clear Hyp; rename X99 into Hyp
-| [ Hyp: context [ tfreevars lhs ] |- _ ] => 
-    pose proof (alpha_preserves_free_vars _ _ H) as X99;
-    rewrite X99 in Hyp; clear X99
-| [ Hyp:context [ tfreevars (tSSubst lhs ?sub) ] |- _ ] => 
-    pose proof (ALtcase alpha_preserves_free_vars _ _ ((SSubstRespectsAlpha1 _ _ sub H))) as X99;
-    rewrite X99 in Hyp; clear X99
-end.
-
-Section SSub.
-Variable G : CFGV. 
-Variable vc  : VarSym G.
-Notation fv := (tfreevars vc).
-Notation "x == y" := (tAlphaEq vc x y)
-   (at level 2, right associativity).
-Notation "sa === sb" := (AlphaEqSubst sa sb)
-   (at level 2, right associativity).
-*)
