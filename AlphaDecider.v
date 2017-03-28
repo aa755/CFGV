@@ -352,8 +352,7 @@ Proof.
     rewrite Hseqd0.
     allsimpl.
     introv Hisv Heq.
-    inverts Heq.
-    cpx.
+    subst xx. inverts Hisv.
 - Case "tnode".
   destruct tb; [right; notAlpha;fail | |].
 
@@ -439,8 +438,7 @@ Proof.
     rewrite Hseqd0.
     allsimpl.
     introv Hisv Heq.
-    inverts Heq.
-    cpx; fail.
+    subst xx. inverts Hisv.
 
 
   EqDec p p0;[ subst p0; unfold pAlphaEqG; rewrite DeqTrue
@@ -495,8 +493,7 @@ Proof.
     rewrite Hseqd0.
     allsimpl.
     introv Hisv Heq.
-    inverts Heq.
-    cpx; fail.
+    subst xx. inverts Hisv.
 
     EqDec p p0;[| right].
     Focus 2. notAlpha.
