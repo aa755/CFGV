@@ -1059,14 +1059,6 @@ Qed.
 
 End GramVC.
 
-
-
-(*
-*** Local Variables:
-*** coq-load-path: ("../")
-*** End:
-*)
-
 (*
 Lemma SSubstAuxFVarsDisjoint: (
 (forall (s : GSym G) (t : Term s) (sub : SSubstitution vc) lf,

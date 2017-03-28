@@ -1360,10 +1360,3 @@ Qed.
 .
 
 *)
-  
-(*
-*** Local Variables:
-*** coq-load-path: ("../")
-*** End:
-*)
-

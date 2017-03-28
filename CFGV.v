@@ -552,11 +552,6 @@ Ltac proveDeqInductiveNonrec :=
   let Hc:= fresh "Hcontra" in
   intros x y ; destruct x; destruct y; 
     try (left; cpx; fail); (try right; introv Hc; inverts Hc ; cpx).
-(*
-*** Local Variables:
-*** coq-load-path: ("../")
-*** End:
-*)
 
 (*
 Definition vFreshDistRenLL 

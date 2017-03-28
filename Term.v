@@ -1060,8 +1060,3 @@ Proof.
   apply eqset_sym.
   apply  eqSetDeepShallowPlusAlready.
 Qed.
-(*
-*** Local Variables:
-*** coq-load-path: ("../")
-*** End:
-*)

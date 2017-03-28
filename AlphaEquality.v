@@ -399,12 +399,6 @@ Definition tAlphaEqual {G : CFGV} {gs : GSym G} (ta tb : Term gs):=
 forall (vc: VarSym G), tAlphaEq vc ta tb.
 
 (*
-*** Local Variables:
-*** coq-load-path: ("../")
-*** End:
-*)
-
-(*
 Inductive tAlphaEq: forall {gs : (GSym G)},
       (Term gs) -> (Term gs) -> [univ] :=
 | alt: forall T t, tAlphaEq (tleaf T t) (tleaf T t)

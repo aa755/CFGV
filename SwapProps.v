@@ -1591,9 +1591,3 @@ Proof.
     repeat(in_reasoning); cpx.
     rw XX; cpx.
 Qed.
-
-(*
-*** Local Variables:
-*** coq-load-path: ("../")
-*** End:
-*)

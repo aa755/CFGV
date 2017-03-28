@@ -368,11 +368,3 @@ Ltac AddFDLLSpec :=
   end.
 
 *)
-
-
-
-(*
-*** Local Variables:
-*** coq-load-path: ("../")
-*** End:
-*)

@@ -161,8 +161,3 @@ Proof.
   comp_ind_type in Heqd.
   simpl in Heqd.
 *)  
-(*
-*** Local Variables:
-*** coq-load-path: ("../")
-*** End:
-*)

@@ -269,10 +269,3 @@ with mSwapEmbed
            mpcons (pSwapEmbed ph  swEmbed)
                   (mSwapEmbed ptl swEmbed)
   end.
-
-
-(*
-*** Local Variables:
-*** coq-load-path: ("../")
-*** End:
-*)
