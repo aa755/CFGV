@@ -26,6 +26,7 @@
 
 Require Export UsefulTypes.
 Require Export bin_rels.
+Require Import Omega.
 
 Fixpoint LIn {A : Type} (a:A) (l:list A) : [univ] :=
   match l with
@@ -423,7 +424,7 @@ Lemma assert_beq_list :
 Proof.
   induction l1; destruct l2; simpl; split; sp; try (complete (inversion H)).
   destruct (eq a a0); subst.
-  f_equal. apply IHl1; auto. 
+  f_equal. apply IHl1; auto.
   inversion H.
   inversion H; subst.
   destruct (eq a0 a0); subst; sp.
@@ -606,7 +607,7 @@ Lemma map_flat_map :
     map g (flat_map f l) = flat_map (compose (map g) f) l.
 Proof.
   induction l; simpl; sp.
-  rw map_app. 
+  rw map_app.
   rewrite IHl.
   unfold compose; auto.
 Qed.
@@ -922,8 +923,8 @@ Lemma app_subset :
     subset (l1 ++ l2) l3 <=> subset l1 l3  #  subset l2 l3.
 Proof.
   induction l1; simpl; sp; try(split; sp; fail).
-  trw cons_subset. trw cons_subset.  
-  split; introv Hlin; repnd; 
+  trw cons_subset. trw cons_subset.
+  split; introv Hlin; repnd;
   try(trw IHl1); try(trw_h IHl1  Hlin; repnd);
   repeat(auto;split;auto).
 Qed.
@@ -1735,19 +1736,19 @@ Proof.
 Qed.
 
 Theorem nat_compare_dec: forall m n, (n < m [+]  m <= n ).
-Proof. induction m. destruct n. right. auto. 
-    right. omega. intros.  destruct (IHm n); 
+Proof. induction m. destruct n. right. auto.
+    right. omega. intros.  destruct (IHm n);
     destruct (eq_nat_dec n m); subst;
-    try( left; omega);    
-    try( right; omega).    
-Qed. 
+    try( left; omega);
+    try( right; omega).
+Qed.
 
 Theorem eq_list2
      : forall (A : Type) (x : A) (l1 l2 : list A),
        l1 = l2 <=>
        length l1 = length l2  #  (forall n : nat, n<length l1 -> nth n l1 x = nth n l2 x).
 Proof.
-  intros. split ; introv H. 
+  intros. split ; introv H.
   eapply eq_list  in H. repnd. split; auto.
   repnd. eapply  eq_list; split; eauto.
   intros. assert (n < length l1 \/  length l1 <= n ) as Hdic by omega.
@@ -1865,39 +1866,39 @@ Inductive no_repeats {T} : list T -> [univ] :=
 
 Theorem last_snoc: forall A (l:list A) (a d:A) ,
   nth (length l) (snoc l a) d= a.
-Proof. 
-    induction l ; introv . refl. 
-    rewrite snoc_as_append. rewrite app_nth2. 
-    simpl. asserts_rewrite (length l - length l=0); try omega. 
-    auto. omega. 
-Qed. 
+Proof.
+    induction l ; introv . refl.
+    rewrite snoc_as_append. rewrite app_nth2.
+    simpl. asserts_rewrite (length l - length l=0); try omega.
+    auto. omega.
+Qed.
 
 Theorem eq_maps2:
   forall (A B C: Type) (f : A -> B) (g  : C -> B) (la : list A) (lc : list C) defa defc,
   length la = length lc
-  -> (forall n ,  n < length la -> f  (nth n la defa) = g ( nth  n lc defc)) 
+  -> (forall n ,  n < length la -> f  (nth n la defa) = g ( nth  n lc defc))
   -> map f la = map g lc.
-Proof. induction la using rev_list_ind; introv Hleq Hp. 
-  invertsn Hleq. symmetry in Hleq. rw length0 in Hleq. subst. 
-  reflexivity. allrewrite snoc_as_append. rewrite map_app. 
-  rewrite length_app in Hleq. allsimpl. rev_list_dest lc. invertsn Hleq. 
-  omega. allrewrite snoc_as_append. rewrite map_app. allsimpl. 
-  rewrite length_app in Hleq. allsimpl. 
+Proof. induction la using rev_list_ind; introv Hleq Hp.
+  invertsn Hleq. symmetry in Hleq. rw length0 in Hleq. subst.
+  reflexivity. allrewrite snoc_as_append. rewrite map_app.
+  rewrite length_app in Hleq. allsimpl. rev_list_dest lc. invertsn Hleq.
+  omega. allrewrite snoc_as_append. rewrite map_app. allsimpl.
+  rewrite length_app in Hleq. allsimpl.
   assert (length la = length u) as Hleq1 by omega.
-  f_equal. eapply IHla; eauto. 
-  intros. assert (n < length (la++[a])) as Hla. rewrite length_app. 
-  omega. apply Hp in Hla. 
+  f_equal. eapply IHla; eauto.
+  intros. assert (n < length (la++[a])) as Hla. rewrite length_app.
+  omega. apply Hp in Hla.
   rewrite app_nth1 in Hla; auto.  rewrite app_nth1 in Hla; auto.
-  eauto. rewrite <- Hleq1; auto. 
+  eauto. rewrite <- Hleq1; auto.
   instlemma (Hp (length la)) as Hle.
-  rewrite <- snoc_as_append in Hle. 
-  rewrite <- snoc_as_append in Hle. 
-  rewrite last_snoc in Hle. 
-  rewrite Hleq1 in Hle. 
-  rewrite last_snoc in Hle. 
-  f_equal; auto. apply Hle. 
-  rewrite <- Hleq1. 
-  rewrite length_snoc; omega. 
+  rewrite <- snoc_as_append in Hle.
+  rewrite <- snoc_as_append in Hle.
+  rewrite last_snoc in Hle.
+  rewrite Hleq1 in Hle.
+  rewrite last_snoc in Hle.
+  f_equal; auto. apply Hle.
+  rewrite <- Hleq1.
+  rewrite length_snoc; omega.
 Qed.
 
 
@@ -1913,13 +1914,13 @@ Proof. induction l as [| a  l maprec]; introv f. exact nil.
    exact (b::brec).
 Defined.
 
-Lemma map_gmap_eq : forall {A B : Type} (l: list A) 
+Lemma map_gmap_eq : forall {A B : Type} (l: list A)
   (f : forall a, LIn a l -> B) (g: A->B),
   (forall a (p: LIn a l), f a p = g a)
-   -> map g l = gmap l f. 
-Proof. induction l as [| a l Hind]; introv Heq;[reflexivity | ]. 
-  simpl. f_equal. rewrite Heq. reflexivity. 
-  apply Hind. intros. rewrite Heq; reflexivity. 
+   -> map g l = gmap l f.
+Proof. induction l as [| a l Hind]; introv Heq;[reflexivity | ].
+  simpl. f_equal. rewrite Heq. reflexivity.
+  apply Hind. intros. rewrite Heq; reflexivity.
 Qed.
 
 Fixpoint appl {A: Type} (l: list (list A)) : list A :=
@@ -1932,8 +1933,8 @@ Theorem flat_map_as_appl_map:
  forall {A B:Type} (f: A->list B) (l : list A),
    flat_map f l = appl (map f l).
 Proof.
- induction l; auto. 
- simpl. rw IHl; auto. 
+ induction l; auto.
+ simpl. rw IHl; auto.
 Qed.
 
 Lemma gmap_length : forall (A B : Type) (l : list A)
@@ -2004,10 +2005,10 @@ Proof.
 Qed.
 
 Lemma combine_in_right : forall T1 T2 (l2: list T2) (l1: list T1),
- (length l2 <= length l1) 
-  -> forall u2, ( LIn u2 l2) 
+ (length l2 <= length l1)
+  -> forall u2, ( LIn u2 l2)
   -> {u1 : T1 $ LIn (u1,u2) (combine l1 l2)}.
-Proof. induction l2; intros ? Hlen ?   Hin. inverts Hin as Hin; 
+Proof. induction l2; intros ? Hlen ?   Hin. inverts Hin as Hin;
   simpl in Hlen.
   destruct l1 ; simpl in Hlen. omega. inverts Hin as Hin.
  -  subst.  exists t. simpl. left; auto.
@@ -2024,7 +2025,7 @@ Fixpoint select {A:Type} (n:nat) (l:list A): option A :=
          end
   | S m => match l with
            | [] => None
-           | _ :: t => select m t 
+           | _ :: t => select m t
            end
   end.
 
@@ -2041,16 +2042,16 @@ Proof.
   induction n as [|n Hind];  destruct l; allsimpl; try (split;sp;omega;fail).
   split;intro H.
   apply Hind; auto. omega.
-  apply Hind in H; auto. omega. 
+  apply Hind in H; auto. omega.
 Qed.
-  
-Lemma first_index {A: Type} (l: list A) (a:A) (deq : Deq A): 
+
+Lemma first_index {A: Type} (l: list A) (a:A) (deq : Deq A):
   {n:nat $ n < length l # nth n l a= a #(forall m, m<n -> nth m l a <>a)}
      [+] (! (LIn a l)).
 Proof.
   induction l as [| h l Hind]; [right;sp;fail|].
   destruct (deq h a); subst; allsimpl;[left ; exists 0; sp; omega | ].
-  dorn Hind. 
+  dorn Hind.
   + exrepnd. left. exists (S n0). split; auto; try omega; split; auto.
      introv Hlt. destruct m; auto. apply Hind0; omega.
   + right. intro Hc; sp.
@@ -2091,7 +2092,7 @@ end.
 Lemma select_lt : forall {A:Type} (l: list A) (a:A) n,
   select n l = Some a -> n < length l.
 Proof.
-  introv Heq. 
+  introv Heq.
   assert (n<length l \/ n>=length l ) as XX by omega.
   dorn XX; auto. apply nth_select2 in XX. rewrite XX in Heq.
   inverts Heq.
@@ -2107,7 +2108,7 @@ Proof.
   auto.
 Qed.
 
-Lemma no_repeats_index_unique: forall {T:Type} 
+Lemma no_repeats_index_unique: forall {T:Type}
   (a:T) (n1 n2:nat) (l:list T),
   no_repeats l
   -> select n1 l = Some a
@@ -2126,11 +2127,11 @@ Proof.
 
   allsimpl. destruct n2.
   inverts H2s. inverts Hnr. apply select_in in H1s. sp.
-  f_equal. allsimpl. 
+  f_equal. allsimpl.
   apply Hind with (l:=l); eauto.
   inverts Hnr; auto.
 Qed.
-  
+
 Lemma nth_select3:
   forall (A : Type) (n : nat) (l : list A) (a def : A),
   n < length l
@@ -2159,7 +2160,7 @@ Proof.
 Qed.
 
 
-Lemma length_combine_eq : forall {A B: Type} (la:list A) (lb: list B), 
+Lemma length_combine_eq : forall {A B: Type} (la:list A) (lb: list B),
   length la =length lb
   -> length (combine la lb) = length la.
 Proof.
@@ -2178,7 +2179,7 @@ Definition not_in_prefix {A: Type} (la : list A) (a:A) (n:nat) :=
                (forall m : nat,
                      m < n -> nth m la a <> a).
 
-  
+
  Definition lforall {A:Type} (P: A-> Type) (l:list A) :=
   forall a:A, LIn a l -> P a.
 
@@ -2189,7 +2190,7 @@ Proof.
   unfold lforall. sp.
 Defined.
 
-Lemma combine_eq : forall {A B: Type} 
+Lemma combine_eq : forall {A B: Type}
   (l1a l2a: list A) (l1b l2b: list B),
   combine l1a l1b = combine l2a l2b
   -> length l1a = length l1b
@@ -2197,7 +2198,7 @@ Lemma combine_eq : forall {A B: Type}
   -> l1a=l2a # l1b=l2b.
 Proof.
   induction l1a as [|a1 l1a Hind]; auto; introv Hc He1 He2;
-  allsimpl; destruct l1b; destruct l2b; destruct l2a;  
+  allsimpl; destruct l1b; destruct l2b; destruct l2a;
    try(invertsn He1); try(invertsn He2); allsimpl; try(invertsn Hc); auto.
   pose proof (Hind _ _ _ Hc He1 He2) as Xr. repnd.
   rewrite Xr. rewrite Xr0; split; sp.
@@ -2239,7 +2240,7 @@ Qed.
 
 Definition is_first_index {T:Type} (l: list T) (t:T) (n:nat) :=
   n< length l # nth n l t = t # not_in_prefix l t n.
- 
+
 Lemma is_first_index_unique : forall {T:Type} (l: list T) (t:T) (n1 n2 :nat),
   is_first_index l t n1
   -> is_first_index l t n2
@@ -2451,7 +2452,7 @@ Qed.
 Hint Resolve Lin_eauto1 Lin_eauto2 : slow.
 
 Ltac disjoint_lin_contra :=
-    match goal with 
+    match goal with
     [ H1 : LIn ?t ?lv1 , H2 : LIn ?t ?lv2, H3 : (disjoint ?lv1 ?lv2) |- _ ]
       => apply H3 in H1; sp ; fail
   |  [ H1 : LIn ?t ?lv1 , H2 : LIn ?t ?lv2, H3 : (disjoint ?lv2 ?lv1) |- _ ]
@@ -2470,9 +2471,9 @@ Proof.
   rewrite nth_indep with (d':=a); sp.
 Qed.
 
-Lemma le_binrel_list_un : forall {T:Type} (def : T) 
+Lemma le_binrel_list_un : forall {T:Type} (def : T)
    (R: @bin_rel T) (Rul Rur: T -> [univ]),
-   le_bin_rel R (indep_bin_rel Rul Rur) 
+   le_bin_rel R (indep_bin_rel Rul Rur)
    -> forall (la lb : list T), binrel_list def R la lb
           -> (forall x:T , LIn x la -> Rul x) # (forall x:T , LIn x lb -> Rur x).
 Proof.
@@ -2496,7 +2497,7 @@ Lemma binrel_list_cons : forall {T : Type} R (def a b :T ) ta tb,
    <=> (binrel_list def R (a::ta) (b :: tb)).
 Proof.
   split; introv hyp; unfold binrel_list in hyp; unfold binrel_list.
-  - repnd. 
+  - repnd.
     simpl. dands;spcf;[]. introv Hlt. destruct n; spc.
     dimp (hyp0 n); spc; omega.
   - allsimpl. repnd. dands ;spcf.
@@ -2514,7 +2515,7 @@ Proof.
   introv Hin. apply in_combine in Hin; spc.
 Qed.
 Ltac in_reasoning :=
-match goal with 
+match goal with
 | [ H : context [LIn _ [_]] |- _] => trw_h in_single_iff  H
 | [ H : LIn _ (_::_) |- _ ] => simpl in H
 | [ H : LIn _ (_++_) |- _ ] => apply in_app_iff
@@ -2537,9 +2538,9 @@ Definition eqset {T: Type} (vs1 vs2: list T) :=
 Definition eqset2 {T: Type} (vsa vsb: list T) :=
 (subset vsa vsb # subset vsb vsa).
 
-Ltac dLin_hyp := 
+Ltac dLin_hyp :=
   repeat match goal with
-  [ H : forall  x : ?T , ((( ?L = x ) [+] ?R) -> ?C) |- _ ] => 
+  [ H : forall  x : ?T , ((( ?L = x ) [+] ?R) -> ?C) |- _ ] =>
     let Hyp := fresh "Hyp" in
     pose proof (H L (inl eq_refl)) as Hyp;
     specialize (fun x y => H x (inr y))
@@ -2548,9 +2549,9 @@ Ltac dLin_hyp :=
 
 Ltac dlist_len_name ll name :=
 repeat match goal with
-[  H : length ll  = _ |- _ ]=> symmetry in H 
+[  H : length ll  = _ |- _ ]=> symmetry in H
 |[ H :  0 = length ll |- _ ]  => destruct ll; inversion H
-|[ H :  S _ = length ll |- _ ]  => 
+|[ H :  S _ = length ll |- _ ]  =>
     let ename:= fresh name in
     destruct ll as [| ename ll]; simpl in H; inverts H
 |[ H :  0 = length [] |- _ ]  => clear H
@@ -2620,7 +2621,7 @@ Ltac cpx :=
 (** same as [appl] above. Perhaps this
     version can reuse many properties about
     [flat_map] *)
-Definition flatten {A : Type} (l : list (list A)) : list A:= 
+Definition flatten {A : Type} (l : list (list A)) : list A:=
   flat_map (fun x => x) l.
 
 Lemma LInSeqIff : forall len n m,
@@ -2638,7 +2639,7 @@ Proof.
 Qed.
 
 Definition monotoneSetFn {A B : Type}
-  (f: list A-> list B) := 
+  (f: list A-> list B) :=
   forall la lb,
     subset la lb
     -> subset (f la) (f lb).
@@ -2706,7 +2707,7 @@ Proof.
   cpx.
 Qed.
 
-Lemma subsetFlatMap2Eauto: 
+Lemma subsetFlatMap2Eauto:
    forall {A B : Type} (h : A)
   (f:  A-> list B),
   subset (flat_map f [h,h]) (f h).
@@ -2720,7 +2721,7 @@ Qed.
 
 Lemma monotone_eauto:
   forall {A B : Type}
-  (f: list A-> list B) la lb, 
+  (f: list A-> list B) la lb,
   monotoneSetFn f
   -> subset la lb
   -> subset (f la) (f lb).
@@ -2730,8 +2731,8 @@ Proof.
 Qed.
 
 Lemma subset_eauto :
-forall (T : Type) 
-  (la lb : list T) x, 
+forall (T : Type)
+  (la lb : list T) x,
   subset la lb
   ->  LIn x la -> LIn x lb.
 Proof.
@@ -2755,7 +2756,7 @@ Proof.
 Qed.
 
 Definition lhead {T:Type } (l :list (list T)) : list T :=
-match l with | [] => [] | h::tl => h   
+match l with | [] => [] | h::tl => h
 end.
 
 (** goes thru the list [ll] and keeps only
@@ -2795,9 +2796,8 @@ Lemma FilterLIn : forall
 forall x l, LIn x (filter f l) <=> LIn x l # f x = true.
 Proof.
   induction l; simpl.
-  intuition.
-  intros.
-  case_eq (f a); intros; simpl; intuition congruence.
+  split; intuition.
+  case_eq (f a); intros; simpl; dintuition congruence.
 Qed.
 
 Lemma monotoneFilter:
@@ -2811,24 +2811,24 @@ Proof.
   apply FilterLIn in Hin.
   repnd. dands; cpx.
 Qed.
- 
+
 
 Hint Unfold monotoneSetFn : SetReasoning.
 Hint Resolve monotoneSetFnFlatMap monotoneSetFnMap
   Lin_eauto1 Lin_eauto2 in_combine_left_eauto
-  in_combine_right_eauto 
+  in_combine_right_eauto
   disjoint_nil_r disjoint_nil_l disjoint_sym_impl
-  subset_disjoint 
-    subsetAppEauto 
-    subsetAppEauto2 
+  subset_disjoint
+    subsetAppEauto
+    subsetAppEauto2
     subsetAppEauto3
     subset_eauto
       monotone_eauto
       subset_trans subset_nil_l
       subsetFlatMap2Eauto
       subsetConsEauto
-      not_in_subset revSubest1 
-      revSubest2 
+      not_in_subset revSubest1
+      revSubest2
       lKeepDisjoint
       lKeepSubset
       monotoneFilter :
@@ -2867,7 +2867,7 @@ end.
 
 
 Fixpoint liftPointwise
-{A B : Type} (R : A-> B -> [univ]) 
+{A B : Type} (R : A-> B -> [univ])
   (la: list A) (lb : list B) : [univ]:=
 match (la,lb) with
 | ([],[]) => True
@@ -2875,7 +2875,7 @@ match (la,lb) with
 | _ => False
 end.
 
-Fixpoint lForall 
+Fixpoint lForall
   {A : Type} (P : A -> [univ]) (l : list A) : [univ] :=
 match l with
 | [] => True
@@ -2886,7 +2886,7 @@ Lemma lForallSame: forall
   {A : Type} (P : A -> [univ]) (l : list A),
   lForall P l <=> lforall P l.
 Proof.
-  induction l; allsimpl; unfold lforall; repnd; 
+  induction l; allsimpl; unfold lforall; repnd;
     split; cpx; introv Hyp; repnd.
   - apply IHl in Hyp. introv Hin.
     allsimpl. dorn Hin; subst; cpx.
@@ -3044,8 +3044,8 @@ Lemma no_rep_flat_map_seq1 : forall {A: Type}
   no_repeats (flat_map f (seq n len))
   -> LIn k (seq n len)
   -> (no_repeats (f k)
-        # (forall m, m> k 
-            -> m< (len + n) 
+        # (forall m, m> k
+            -> m< (len + n)
             ->disjoint (f k) (f m))).
 Proof.
   induction len; cpx.
@@ -3054,7 +3054,7 @@ Proof.
   apply no_repeats_app in Hyp.
   repnd; cpx.
   dorn Hyp0; subst; cpx;
-  [|apply IHlen in Hyp0; dands; cpx; 
+  [|apply IHlen in Hyp0; dands; cpx;
       rewrite <- NPeano.Nat.add_succ_r ; cpx].
   dands; cpx.
   introv Hgt Hlt.
@@ -3111,7 +3111,7 @@ Proof.
   cpx; apply Hyp; cpx.
 Qed.
 
-  
+
 Lemma eqsetCommute : forall {T : Type}
   (la lb : list T),
   eqset (la ++ lb) (lb ++ la).
@@ -3214,4 +3214,3 @@ Proof.
   introv; rw @no_repeats_cons; simpl; sp.
 Qed.
 Hint Immediate no_repeats_singleton.
-

@@ -24,14 +24,14 @@
 *)
 Set Implicit Arguments.
 Require Export AlphaEqProps.
-
+Require Import Omega.
 
 
 Ltac EqDecRefl :=
   let dec:= fresh "dec" in
   let HH:= fresh "Hrefl" in
 repeat match goal with
-[pp : @eq ?T ?ta ?tb |- _ ] => 
+[pp : @eq ?T ?ta ?tb |- _ ] =>
   assert (Deq T) as dec by eauto with Deq;
   pose proof (UIPReflDeq dec _ pp) as HH;
   try rewrite HH; clear HH dec
@@ -46,14 +46,14 @@ Ltac EqDec ta tb :=
   destruct (dec ta tb) as [Heq| Hneq]; clear dec.
 
 
-Definition tAlphaEqG {G} (sa sb : GSym G) 
+Definition tAlphaEqG {G} (sa sb : GSym G)
   (vc: VarSym G ) (ta : Term sa) (tb : Term sb):=
 match (deqGSym sa sb) with
 | left eqq => tAlphaEq vc (transport eqq ta) tb
 | right eqq => False
 end.
 
-Definition pAlphaEqG {G} (sa sb : GSym G) 
+Definition pAlphaEqG {G} (sa sb : GSym G)
   (vc: VarSym G ) (ta : Pattern sa) (tb : Pattern sb):=
 match (deqGSym sa sb) with
 | left eqq => pAlphaEq vc (transport eqq ta) tb
@@ -80,11 +80,11 @@ Ltac notAlpha :=
     inverts Hseq; cpx ; try subst; cpx
   end.
 
-Lemma decideAbsT {G} (vc : VarSym G) 
+Lemma decideAbsT {G} (vc : VarSym G)
   (sa : GSym G) (ta: Term sa)
 (Hdt : forall phnew : Term sa,
       tSize phnew <= tSize ta ->
-      forall (sb : GSym G) (tb : Term sb), 
+      forall (sb : GSym G) (tb : Term sb),
      decidable (tAlphaEqG vc phnew tb))
 (sb : GSym G) (tb: Term sa)
 (la lb :(list (vType vc))) :
@@ -94,7 +94,7 @@ Proof.
   destruct blen;
     [
         applysym beq_nat_true in Heqblen
-      | 
+      |
         right ;
         applysym beq_nat_false in Heqblen;
         introv Hal; inverts Hal;
@@ -103,30 +103,30 @@ Proof.
   remember (GFreshVars (la++lb
               ++ tAllVars ta++tAllVars tb) la) as lvn.
   remember (tSwap ta (combine la lvn)) as phnew.
-  pose proof (tcase 
+  pose proof (tcase
         (@swapPreservesSize G vc (combine la lvn)) _ ta) as Hs.
   specialize (Hdt (tSwap ta (combine la lvn))).
   rewrite Hs in Hdt.
-  dimp Hdt. apply Hdt with 
+  dimp Hdt. apply Hdt with
         (tb:= (tSwap tb (combine lb lvn))) in hyp.
   unfold tAlphaEqG in hyp.
   rewrite DeqTrue in hyp. allsimpl.
   clear Hs  Hdt.
   clear dependent phnew.
   destruct hyp as [? | Hnal];[left| right];
-  pose proof (FreshDistVarsSpec 
+  pose proof (FreshDistVarsSpec
       (la ++ lb ++ tAllVars ta ++ tAllVars tb) la ) as XX;
   rewrite <- Heqlvn in XX;
   simpl in XX; repnd; dands;
   symmetry in XX.
-  - apply alAbT with (lbnew:=lvn); 
+  - apply alAbT with (lbnew:=lvn);
         cpx; try congruence;
     unfold tFresh; allsimpl; repeat(disjoint_reasoning).
   - introv Hal. apply Hnal. clear Hnal. clear Heqlvn.
-    apply betterAbsTElim 
+    apply betterAbsTElim
     with (lvAvoid:= lvn) in Hal.
      allsimpl. exrepnd.
-    apply tAlphaEqEquivariantRev with 
+    apply tAlphaEqEquivariantRev with
     (sw := combine lvn lbnew).
     autorewrite with SwapAppR.
     unfold tFresh in Hal3.
@@ -141,7 +141,7 @@ Proof.
 Defined.
 
 
-Lemma decideAbsP {G} (vc : VarSym G) 
+Lemma decideAbsP {G} (vc : VarSym G)
   (sa : GSym G) (ta: Pattern sa)
 (Hdt : forall phnew : Pattern sa,
       pSize phnew <= pSize ta ->
@@ -155,7 +155,7 @@ Proof.
   destruct blen;
     [
         applysym beq_nat_true in Heqblen
-      | 
+      |
         right ;
         applysym beq_nat_false in Heqblen;
         introv Hal; inverts Hal;
@@ -164,30 +164,30 @@ Proof.
   remember (GFreshVars (la++lb
               ++ pAllVars ta++pAllVars tb) la) as lvn.
   remember (pSwap ta (combine la lvn)) as phnew.
-  pose proof (pcase 
+  pose proof (pcase
         (@swapPreservesSize G vc (combine la lvn)) _ ta) as Hs.
   specialize (Hdt (pSwap ta (combine la lvn))).
   rewrite Hs in Hdt.
-  dimp Hdt. apply Hdt with 
+  dimp Hdt. apply Hdt with
         (tb:= (pSwap tb (combine lb lvn))) in hyp.
   unfold pAlphaEqG in hyp.
   rewrite DeqTrue in hyp. allsimpl.
   clear Hs  Hdt.
   clear dependent phnew.
   destruct hyp as [? | Hnal];[left| right];
-  pose proof (FreshDistVarsSpec 
+  pose proof (FreshDistVarsSpec
       (la ++ lb ++ pAllVars ta ++ pAllVars tb) la ) as XX;
   rewrite <- Heqlvn in XX;
   simpl in XX; repnd; dands;
   symmetry in XX.
-  - apply alAbP with (lbnew:=lvn); 
+  - apply alAbP with (lbnew:=lvn);
         cpx; try congruence;
     unfold pFresh; allsimpl; repeat(disjoint_reasoning).
   - introv Hal. apply Hnal. clear Hnal. clear Heqlvn.
-    apply betterAbsPElim 
+    apply betterAbsPElim
     with (lvAvoid:= lvn) in Hal.
      allsimpl. exrepnd.
-    apply pAlphaEqEquivariantRev with 
+    apply pAlphaEqEquivariantRev with
     (sw := combine lvn lbnew).
     autorewrite with SwapAppR.
     unfold pFresh in Hal3.
@@ -204,7 +204,7 @@ Defined.
 Definition diffVarClasses{G} {sa : GSym G} (ta: Term sa)
             {sb: GSym G} (tb : Term sb) :=
 match (ta, tb) with
-| (vleaf vca va, vleaf vcb vb) 
+| (vleaf vca va, vleaf vcb vb)
     => match (DeqVarSym vca vcb) with
       |left _ => False
       |right _ => True
@@ -212,11 +212,11 @@ match (ta, tb) with
 | _ => False
 end.
 
-Definition diffPVarClasses{G} 
+Definition diffPVarClasses{G}
         {sa : GSym G} (ta: Pattern sa)
         {sb: GSym G} (tb : Pattern sb) :=
 match (ta, tb) with
-| (pvleaf vca va, pvleaf vcb vb) 
+| (pvleaf vca va, pvleaf vcb vb)
     => match (DeqVarSym vca vcb) with
       |left _ => False
       |right _ => True
@@ -228,7 +228,7 @@ end.
 Definition diffTProdsNode {G} {sa : GSym G} (ta: Term sa)
             {sb: GSym G} (tb : Term sb) :=
 match (ta, tb) with
-| (tnode pa va, tnode pb vb) 
+| (tnode pa va, tnode pb vb)
     => match (deqPr G pa pb) with
       |left _ => False
       |right _ => True
@@ -236,11 +236,11 @@ match (ta, tb) with
 | _ => False
 end.
 
-Definition diffPProdsNode {G} {sa : GSym G} 
+Definition diffPProdsNode {G} {sa : GSym G}
         (ta: Pattern sa)
             {sb: GSym G} (tb : Pattern sb) :=
 match (ta, tb) with
-| (pnode pa va, pnode pb vb) 
+| (pnode pa va, pnode pb vb)
     => match (deqPPr G pa pb) with
       |left _ => False
       |right _ => True
@@ -248,11 +248,11 @@ match (ta, tb) with
 | _ => False
 end.
 
-Definition diffEmbedNode {G} {sa : GSym G} 
+Definition diffEmbedNode {G} {sa : GSym G}
         (ta: Pattern sa)
             {sb: GSym G} (tb : Pattern sb) :=
 match (ta, tb) with
-| (embed pa va, embed pb vb) 
+| (embed pa va, embed pb vb)
     => match (deqEm G pa pb) with
       |left _ => False
       |right _ => True
@@ -263,23 +263,23 @@ end.
 
 Definition isVLeaf {G} {sa : GSym G} (ta: Term sa) :=
 match ta with
-| vleaf vca va 
+| vleaf vca va
     => True
 | _ => False
 end.
 
-Definition isPNode {G} {sa : GSym G} 
+Definition isPNode {G} {sa : GSym G}
   (ta: Pattern sa) :=
 match ta with
-| pnode vca va 
+| pnode vca va
     => True
 | _ => False
 end.
 
-Definition isEmbed {G} {sa : GSym G} 
+Definition isEmbed {G} {sa : GSym G}
   (ta: Pattern sa) :=
 match ta with
-| embed vca va 
+| embed vca va
     => True
 | _ => False
 end.
@@ -294,18 +294,18 @@ Lemma alphaEqDecidable : forall {G} (vc : VarSym G),
             (sb: GSym G) (tb : Pattern sb),
             decidable (pAlphaEqG vc ta tb))
          *
-        (forall (l : MixtureParam) (ma mb : Mixture l) 
+        (forall (l : MixtureParam) (ma mb : Mixture l)
         (lbva : list (list (vType vc)))
         (lbvb : list (list (vType vc))),
-           decidable 
-              (lAlphaEqAbs (MakeAbstractions vc ma lbva) 
+           decidable
+              (lAlphaEqAbs (MakeAbstractions vc ma lbva)
                            (MakeAbstractions vc mb lbvb)))).
 Proof.
   intros.
   GInductionS; introns Hyp; intros;  allsimpl.
 - Case "tleaf".
   destruct tb;[ | right; notAlpha | right; notAlpha];[].
-  
+
   EqDec T T0; [| right; notAlpha]; subst.
   EqDec t t0; [left|right]; subst;
   unfold tAlphaEqG; try rewrite DeqTrue; allsimpl;
@@ -344,12 +344,12 @@ Proof.
     introv Hal. inverts Hal.
     EqDecSndEq.
     GC. clear H6. clear X. clear H0.
-    generalize dependent H3. 
+    generalize dependent H3.
     remember (vleaf vc0 v) as xx.
     assert (isVLeaf xx) as Hxx by (subst;simpl; auto).
     clear Heqxx.
     generalize dependent xx.
-    rewrite Hseqd0. 
+    rewrite Hseqd0.
     allsimpl.
     introv Hisv Heq.
     inverts Heq.
@@ -362,7 +362,7 @@ Proof.
     assert (isVLeaf xx) as Hxx by (subst;simpl; auto).
     clear Heqxx.
     generalize dependent xx.
-    rewrite <- Hseqd0. 
+    rewrite <- Hseqd0.
     allsimpl.
     introv Hisv Heq.
     inverts Heq. EqDecSndEq. subst xx.
@@ -402,28 +402,28 @@ Proof.
   simpl. rename m0 into mb.
   destruct (Hyp mb (allBndngVars vc p m) (allBndngVars vc p mb)) as
     [Hleq | Hnleq];[left; constructor;auto | right; notAlpha].
-      
+
 - Case "ptleaf".
-  destruct tb;[ | right; notAlpha 
-                | right; notAlpha 
+  destruct tb;[ | right; notAlpha
+                | right; notAlpha
                 | right; notAlpha]; [].
-  
+
   EqDec T T0; [| right; notAlpha]; subst;[].
   EqDec t t0; [left|right]; subst;
   unfold pAlphaEqG; try rewrite DeqTrue; allsimpl;
   eauto with Alpha;[]; notAlpha.
-    
+
 - Case "pvleaf".
-  destruct tb;[ right; notAlpha | 
-                | right; notAlpha 
+  destruct tb;[ right; notAlpha |
+                | right; notAlpha
                 | right; notAlpha]; [].
   EqDec vc0 vc1;[ left;subst; try EqDecRefl; simpl;
                   unfold pAlphaEqG; rewrite DeqTrue
                   ; constructor; fail
                 | right; notAlpha].
-    
+
 - Case "pembed".
-  destruct tb;[ right; notAlpha 
+  destruct tb;[ right; notAlpha
                 | right; notAlpha |
                 | right; notAlpha].
 
@@ -436,7 +436,7 @@ Proof.
     assert (isEmbed xx) as Hxx by (subst;simpl; auto).
     clear Heqxx.
     generalize dependent xx.
-    rewrite Hseqd0. 
+    rewrite Hseqd0.
     allsimpl.
     introv Hisv Heq.
     inverts Heq.
@@ -478,10 +478,10 @@ Proof.
   rewrite DeqTrue in Hd.
   simpl in Hd.
   destruct Hd;[left; constructor; trivial | right; notAlpha].
-  
+
 - Case "pnode".
-  destruct tb;[ right; notAlpha 
-                | right; notAlpha 
+  destruct tb;[ right; notAlpha
+                | right; notAlpha
                 | right; notAlpha| ].
 
     introv Hal. inverts Hal.
@@ -492,7 +492,7 @@ Proof.
     assert (isPNode xx) as Hxx by (subst;simpl; auto).
     clear Heqxx.
     generalize dependent xx.
-    rewrite Hseqd0. 
+    rewrite Hseqd0.
     allsimpl.
     introv Hisv Heq.
     inverts Heq.
@@ -534,10 +534,10 @@ Proof.
   dependent inversion mb. simpl. left.
   constructor.
 
-  
+
 - Case "mtcons".
   dependent inversion mb. simpl.
-  subst. 
+  subst.
   remember (lhead lbva) as lha.
   remember (lhead lbvb) as lhb.
   remember (tail lbva) as lta.
@@ -547,10 +547,10 @@ Proof.
   destruct (Hyp0); [| right ; notAlpha].
   destruct (decideAbsT vc ph Hyp h t lha lhb);
     [left; constructor; auto| right; notAlpha].
-  
+
 - Case "mpcons".
   dependent inversion mb. simpl.
-  subst. 
+  subst.
   remember (lhead lbva) as lha.
   remember (lhead lbvb) as lhb.
   remember (tail lbva) as lta.
@@ -571,4 +571,3 @@ Defined.
 
 (** need (cnstructive) finiteness of [VarSym G] for [tAlphaEqual]
     to be decidable *)
-    

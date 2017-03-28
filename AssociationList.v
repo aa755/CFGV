@@ -1,4 +1,5 @@
 Require Export list.
+Require Import Omega.
 
 Hint Rewrite diff_nil : fast.
 Set Implicit Arguments.
@@ -35,7 +36,7 @@ Proof.
   split; right; auto.
 Qed.
 
-Definition ALMap {TK TV : Type} 
+Definition ALMap {TK TV : Type}
   (fk : Key -> TK)
   (fv : Value -> TV) (al : AssocList):=
 map (fun p => (fk (fst p), fv (snd p))) al.
@@ -46,16 +47,16 @@ ALMap (fun x=>x) f al.
 Variable DeqKey : (Deq Key).
 (** All definitions/lemmas below need decidable equality on Key.
     If not, they should placed before the line above *)
-Fixpoint ALFind 
+Fixpoint ALFind
     (al : AssocList) (key : Key): option Value :=
 match al with
 | nil => None
-| (k, v) :: xs => if DeqKey key k 
-                  then Some v 
+| (k, v) :: xs => if DeqKey key k
+                  then Some v
                   else ALFind xs key
 end.
 
-Definition ALFindDef 
+Definition ALFindDef
     (al : AssocList) (key : Key) (def: Value):  Value :=
 match (ALFind al key) with
 | Some v => v
@@ -79,10 +80,10 @@ Proof.
               dorn Hf; sp.
 Defined.
 
-Definition ALFindDef2 
+Definition ALFindDef2
     (al : AssocList) (key : Key) (def: Value):  Value :=
 match (ALFind2 al key) with
-| inl (existT  v _) => v
+| inl (existT _ v _) => v
 | inr _ => def
 end.
 
@@ -163,7 +164,7 @@ Proof.
     + rw IHsub in H; sp;case_if as Hd; subst;auto; try contradiction.
     + case_if as Hd; subst; auto; try contradiction.
       rw IHsub in H; exrepnd; auto.
-  
+
   - destruct (in_deq Key DeqKey a0 l); allsimpl.
     + apply IHsub in H; exrepnd; auto.
     + destruct (DeqKey v a0); allsimpl; subst; sp;[].
@@ -185,7 +186,7 @@ Lemma ALFindFilterNone :
   - destruct (in_deq Key DeqKey a0 l); allsimpl;
     destruct (DeqKey v a0) as [ddd | ddd]; allsimpl;
     subst;
-    try(rw IHsub in H); 
+    try(rw IHsub in H);
     exrepnd; auto;cpx.
   - destruct (in_deq Key DeqKey a0 l); allsimpl;
     destruct (DeqKey v a0) as [ddd | ddd]; allsimpl;
@@ -260,7 +261,7 @@ match sub with
 | (v, t) :: xs =>
     if in_deq _ DeqKey v vars
     then (v, t) :: ALKeepFirst
-                   xs 
+                   xs
                    (diff DeqKey [v] vars)
     else ALKeepFirst xs vars
 end.
@@ -374,7 +375,7 @@ Lemma ALKeepFirstAppLin:
   forall lv1 lv2 sub v u,
   LIn (v,u) (ALKeepFirst sub (lv1++lv2))
   -> LIn (v,u) (ALKeepFirst sub lv1) [+]
-     LIn (v,u) (ALKeepFirst sub lv2). 
+     LIn (v,u) (ALKeepFirst sub lv2).
 Proof. introv Hin.
   apply ALKeepFirstLin in Hin.
   repnd.
@@ -385,7 +386,7 @@ Qed.
 Lemma ALKeepFirstFilterDiff:
 forall sub lvk lvf,
   (ALKeepFirst  sub (diff DeqKey lvf lvk))
-  = 
+  =
   (ALKeepFirst (ALFilter sub lvf) lvk).
 Proof.
   induction sub; allsimpl;
@@ -427,13 +428,13 @@ Qed.
 Lemma ALFindRangeMapSome :
   forall v t sub f,
     ALFind sub v = Some t
-    -> ALFind (ALMapRange f sub) v 
+    -> ALFind (ALMapRange f sub) v
         = Some (f t).
 Proof.
   induction sub; simpl; sp; allsimpl;[].
   cases_ifd Hd; cpx.
 Qed.
-  
+
 Lemma ALFindRangeMapNone :
   forall v sub f,
     ALFind sub v = None
@@ -443,9 +444,9 @@ Proof.
   cases_ifd Hd; cpx.
 Qed.
 
-Fixpoint ALRangeRel  (R : Value -> Value-> [univ]) 
+Fixpoint ALRangeRel  (R : Value -> Value-> [univ])
     (subl subr : AssocList) : [univ] :=
-match (subl, subr) with 
+match (subl, subr) with
 | ([],[]) => True
 | ((vl,tl) :: sl , (vr,tr) :: sr) => (vl=vr # R tl tr # ALRangeRel R sl sr)
 | ( _ , _) => False
@@ -466,8 +467,8 @@ Proof.
   introv Hr. unfold refl_rel in Hr. unfold refl_rel.
   induction x as [|(v1,t1) subl1 Hind];  allsimpl;sp.
 Qed.
-  
-Lemma ALRangeRelSameDom : forall R 
+
+Lemma ALRangeRelSameDom : forall R
   (subl subr : AssocList),
   ALRangeRel R subl subr
   -> ALDom subl = ALDom subr.
@@ -477,7 +478,7 @@ Proof.
   f_equal; cpx.
 Qed.
 
-Lemma ALRangeRelFind : forall R 
+Lemma ALRangeRelFind : forall R
   (subl subr : AssocList) k t,
   ALRangeRel R subl subr
   -> ALFind subl k = Some t
@@ -490,11 +491,11 @@ Proof.
   eexists; eauto.
 Qed.
 
-Lemma ALRangeRelFilter : forall R 
+Lemma ALRangeRelFilter : forall R
   (subl subr : AssocList) l,
   ALRangeRel R subl subr
   ->  ALRangeRel R
-        (ALFilter  subl l) 
+        (ALFilter  subl l)
         (ALFilter  subr l).
 Proof.
   induction subl as [| (kl,vl) subl Hind]; introv Hal;
@@ -506,7 +507,7 @@ Qed.
   the ones in the section get deactivated
  *)
 End AssociationList.
-Hint Rewrite ALKeepFirstNil ALFilterDom ALFilter_nil_r 
+Hint Rewrite ALKeepFirstNil ALFilterDom ALFilter_nil_r
   ALRangeCombine ALDomCombine: fast.
 
 Hint Resolve ALFilterSubset ALKeepFirstSubst :
@@ -533,15 +534,15 @@ Proof.
 Qed.
 
 Lemma ALFindMapSome :
-  forall {KA KB VA VB : Type} 
+  forall {KA KB VA VB : Type}
     (DKA : Deq KA)
     (DKB : Deq KB)
     (fk : KA -> KB)
     (fv : VA -> VB),
   injective_fun fk
-  -> forall (sub : AssocList KA VA) 
+  -> forall (sub : AssocList KA VA)
       v t, ALFind DKA sub v = Some t
-  -> ALFind DKB (ALMap fk fv sub) (fk v) 
+  -> ALFind DKB (ALMap fk fv sub) (fk v)
         = Some (fv t).
 Proof.
   introv Hik.
@@ -555,15 +556,15 @@ Proof.
 Qed.
 
 Lemma ALFindMapNone :
-  forall {KA KB VA VB : Type} 
+  forall {KA KB VA VB : Type}
     (DKA : Deq KA)
     (DKB : Deq KB)
     (fk : KA -> KB)
     (fv : VA -> VB),
   injective_fun fk
-  -> forall (sub : AssocList KA VA) 
+  -> forall (sub : AssocList KA VA)
       v, ALFind DKA sub v = None
-  -> ALFind DKB (ALMap fk fv sub) (fk v) 
+  -> ALFind DKB (ALMap fk fv sub) (fk v)
         = None.
 Proof.
   introv Hik.
@@ -571,34 +572,34 @@ Proof.
   cases_ifd Hd; cpx.
   + f_equal. apply Hik in Hdt.
     destruct Hdt. rewrite DeqTrue in Heq.
-    invertsn Heq. 
+    invertsn Heq.
   + apply IHsub. revert Heq. cases_ifd Hdd;
     subst; cpx.
 Qed.
 
 Lemma ALFindEndoMapSome :
-  forall {KA VA VB: Type} 
+  forall {KA VA VB: Type}
     (DKA : Deq KA)
     (fk : KA -> KA)
     (fv : VA -> VB),
   injective_fun fk
-  -> forall (sub : AssocList KA VA) 
+  -> forall (sub : AssocList KA VA)
       v, ALFind DKA sub v = None
-  -> ALFind DKA (ALMap fk fv sub) (fk v) 
+  -> ALFind DKA (ALMap fk fv sub) (fk v)
         = None.
 Proof.
   intros. eapply ALFindMapNone; eauto.
 Qed.
 
 Lemma ALMapFilterCommute :
-  forall {KA KB VA VB : Type} 
+  forall {KA KB VA VB : Type}
   (DKA : Deq KA)
   (DKB : Deq KB)
   (fk : KA -> KB)
   (fv : VA -> VB),
   injective_fun fk
   -> forall (sub : AssocList KA VA) l,
-      (ALFilter DKB (ALMap fk fv sub) (map fk l))  
+      (ALFilter DKB (ALMap fk fv sub) (map fk l))
           = ALMap fk fv (ALFilter DKA sub l).
 Proof.
   introv Hin.
@@ -614,13 +615,13 @@ Qed.
 (** endo maps avoid the need to provide another
     decider for keys *)
 Lemma ALEndoMapFilterCommute :
-  forall {KA VA VB : Type} 
+  forall {KA VA VB : Type}
   (DKA : Deq KA)
   (fk : KA -> KA)
   (fv : VA -> VB),
   injective_fun fk
   -> forall (sub : AssocList KA VA) l,
-      (ALFilter DKA (ALMap fk fv sub) (map fk l))  
+      (ALFilter DKA (ALMap fk fv sub) (map fk l))
           = ALMap fk fv (ALFilter DKA sub l).
 Proof.
   intros. apply ALMapFilterCommute; auto.

@@ -23,6 +23,7 @@
 
 *)
 Require Export CFGV.
+Require Import Omega.
 (** printing #  $\times$ #×# *)
 (** printing &  $\times$ #×# *)
 
@@ -38,20 +39,20 @@ Set Implicit Arguments.
 (** CatchFileBetweenTagsTermStart*)
 Section Gram. Context  {G : CFGV}.
 Inductive Term: (GSym G) -> Type :=
-| tleaf : forall (T : Terminal G), 
+| tleaf : forall (T : Terminal G),
     (tSemType G T) -> Term (gsymT  T)
-| vleaf : forall (vc : VarSym G), 
+| vleaf : forall (vc : VarSym G),
     (vType vc) -> Term (gsymTN (vSubstType G vc))
 | tnode : forall (p: TermProd G),
     Mixture (tpRhsAugIsPat p) -> (Term (gsymTN (tpLhs G p)))
 
 with Pattern : (GSym G) -> Type :=
-| ptleaf : forall (T : Terminal G), 
+| ptleaf : forall (T : Terminal G),
     (tSemType G T) -> Pattern (gsymT  T)
-| pvleaf : forall (vc : VarSym G), 
+| pvleaf : forall (vc : VarSym G),
     (vType vc) -> Pattern (gsymV vc)
 | embed : forall (p: EmbedProd G),
-    Term (gsymTN (epRhs G p)) 
+    Term (gsymTN (epRhs G p))
        -> Pattern (gsymPN (epLhs G p))
 | pnode : forall (p: PatProd G),
     Mixture (map (fun x => (true,x)) (ppRhsSym p))
@@ -78,37 +79,37 @@ with mix_mut := Induction for Mixture Sort Type.
 (** a trivial proof, just to get more
     meaningful variable name *)
 Definition GInduction :
-forall 
+forall
 (PT : forall g : GSym G, Term g -> [univ])
 (PP : forall g : GSym G, Pattern g -> [univ])
 (PM : forall l : MixtureParam, Mixture l -> [univ]),
-  (forall (T : Terminal G) (t : tSemType G T), PT (gsymT T) (tleaf T t)) 
+  (forall (T : Terminal G) (t : tSemType G T), PT (gsymT T) (tleaf T t))
   -> (forall (vc : VarSym G) (v : vType vc),
-          PT (gsymTN (vSubstType G vc)) (vleaf vc v)) 
+          PT (gsymTN (vSubstType G vc)) (vleaf vc v))
   -> (forall (p : TermProd G) (m : Mixture (tpRhsAugIsPat p)),
-          PM (tpRhsAugIsPat p) m 
-          -> PT (gsymTN (tpLhs G p)) (tnode p m)) 
-  -> (forall (T : Terminal G) (t : tSemType G T), PP (gsymT T) (ptleaf T t)) 
-  -> (forall (vc : VarSym G) (v : vType vc), 
-          PP (gsymV vc) (pvleaf vc v)) 
+          PM (tpRhsAugIsPat p) m
+          -> PT (gsymTN (tpLhs G p)) (tnode p m))
+  -> (forall (T : Terminal G) (t : tSemType G T), PP (gsymT T) (ptleaf T t))
+  -> (forall (vc : VarSym G) (v : vType vc),
+          PP (gsymV vc) (pvleaf vc v))
   -> (forall (p : EmbedProd G) (t : Term (gsymTN (epRhs G p))),
-          PT (gsymTN (epRhs G p)) t 
-          -> PP (gsymPN (epLhs G p)) (embed p t)) 
-  -> (forall (p : PatProd G) 
+          PT (gsymTN (epRhs G p)) t
+          -> PP (gsymPN (epLhs G p)) (embed p t))
+  -> (forall (p : PatProd G)
           (m : Mixture (map (fun x : GSym G => (true, x)) (ppRhsSym p))),
-          PM (map (fun x : GSym G => (true, x)) (ppRhsSym p)) m 
-          -> PP (gsymPN (ppLhs G p)) (pnode p m)) 
-  ->  PM [] mnil 
+          PM (map (fun x : GSym G => (true, x)) (ppRhsSym p)) m
+          -> PP (gsymPN (ppLhs G p)) (pnode p m))
+  ->  PM [] mnil
   ->  (forall (h : GSym G) (tl : MixtureParam) (ph : Term h),
-          PT h ph 
+          PT h ph
           -> forall ptl : Mixture tl,
-             PM tl ptl 
-             -> PM ((false, h) :: tl) (mtcons ph ptl)) 
+             PM tl ptl
+             -> PM ((false, h) :: tl) (mtcons ph ptl))
   ->  (forall (h : GSym G) (tl : MixtureParam) (ph : Pattern h),
-          PP h ph 
+          PP h ph
           -> forall ptl : Mixture tl,
-              PM tl ptl 
-              -> PM ((true, h) :: tl) (mpcons ph ptl)) 
+              PM tl ptl
+              -> PM ((true, h) :: tl) (mpcons ph ptl))
   -> ((forall (g : GSym G) (p : Term g), PT g p)
          *
       (forall (g : GSym G) (p : Pattern g), PP g p)
@@ -129,14 +130,14 @@ Definition PatInd :=
   (fun PT PP PM a b c d e f g h i j =>
     snd (fst (@GInduction PT PP PM a b c d e f g h i j))).
 
-Fixpoint PatInMix  {s :GSym G} 
+Fixpoint PatInMix  {s :GSym G}
 {l : list (bool # GSym G)}
 (pt : Pattern s)
 (mix : Mixture l) : [univ] :=
 match mix with
 | mnil => False
-| mpcons s' _ h mtl => {p : s =s' $ transport p pt = h} [+] (PatInMix pt mtl)
-| mtcons s' _ h mtl =>  (PatInMix pt mtl)
+| @mpcons s' _ h mtl => {p : s =s' $ transport p pt = h} [+] (PatInMix pt mtl)
+| @mtcons s' _ h mtl =>  (PatInMix pt mtl)
 end.
 
 (* A more specialized lemma for induction on Patterns
@@ -152,12 +153,12 @@ end.
 *)
 
 Lemma PatIndNoEmbed :
-forall 
+forall
 (PP : forall g : GSym G, Pattern g -> [univ]),
   (EmbedProd G-> False)
-  -> (forall (T : Terminal G) (t : tSemType G T), PP (gsymT T) (ptleaf T t)) 
-  -> (forall (vc : VarSym G) (v : vType vc), 
-          PP (gsymV vc) (pvleaf vc v)) 
+  -> (forall (T : Terminal G) (t : tSemType G T), PP (gsymT T) (ptleaf T t))
+  -> (forall (vc : VarSym G) (v : vType vc),
+          PP (gsymV vc) (pvleaf vc v))
   -> (forall (p : PatProd G)
           (m : Mixture (map (fun x : GSym G => (true, x)) (ppRhsSym p))),
           (forall (s : GSym G) (pt : Pattern s),
@@ -189,26 +190,26 @@ Fixpoint TermInMix {s :GSym G}
 (mix : Mixture l) : [univ] :=
 match mix with
 | mnil => False
-| mtcons s' _ h mtl => {p : s =s' $ transport p tt = h} [+] (TermInMix tt mtl)
-| mpcons s' _ h mtl =>  (TermInMix tt mtl)
+| @mtcons s' _ h mtl => {p : s =s' $ transport p tt = h} [+] (TermInMix tt mtl)
+| @mpcons s' _ h mtl =>  (TermInMix tt mtl)
 end.
-  
+
 
 Definition MixInd :=
   (fun PT PP PM a b c d e f g h i j =>
     snd (@GInduction PT PP PM a b c d e f g h i j)).
 
 Lemma TermIndNoPat :
-forall  
+forall
 (PT : forall g : GSym G, Term g -> [univ]),
-  (forall (T : Terminal G) (t : tSemType G T), PT (gsymT T) (tleaf T t)) 
+  (forall (T : Terminal G) (t : tSemType G T), PT (gsymT T) (tleaf T t))
   -> (forall (vc : VarSym G) (v : vType vc),
-          PT (gsymTN (vSubstType G vc)) (vleaf vc v)) 
+          PT (gsymTN (vSubstType G vc)) (vleaf vc v))
   -> (forall (p : TermProd G) (m : Mixture (tpRhsAugIsPat p)),
           (forall (s : GSym G) (pt : Term s),
               TermInMix pt m
               -> PT s pt)
-          -> PT (gsymTN (tpLhs G p)) (tnode p m)) 
+          -> PT (gsymTN (tpLhs G p)) (tnode p m))
   -> (forall (g : GSym G) (p : Term g), PT g p).
 Proof.
   introv Ht Hv Hem.
@@ -257,10 +258,10 @@ match p with
 | pnode _ mix => mBndngVars vc mix
 end
 with mBndngVars {G} (vc: VarSym G) {lgs}
-  (pts : Mixture lgs) : (list (vType vc)) := 
+  (pts : Mixture lgs) : (list (vType vc)) :=
 match pts with
-| mnil => []  | mtcons _ _ _ tl =>  mBndngVars vc tl
-| mpcons _ _ h tl => (pBndngVars vc h) ++ mBndngVars vc tl
+| mnil => []  | mtcons _ tl =>  mBndngVars vc tl
+| mpcons h tl => (pBndngVars vc h) ++ mBndngVars vc tl
 end.
 (** CatchFileBetweenTagsBndngVarsEnd *)
 
@@ -269,10 +270,10 @@ end.
 Fixpoint getBVarsNth {G} (vc  : VarSym G) {lgs}
   (pts : Mixture lgs) (n : nat) : (list (vType vc)) :=
 match (pts,n) with
-| (mnil,_) => []  | (mtcons _ _ ph pth, 0)  => [] 
-| (mpcons _ _ ph pth, 0) => (pBndngVars vc ph)
-| (mtcons _ _ ph pth, S m) => (getBVarsNth vc pth m)
-| (mpcons _ _ ph pth, S m) => (getBVarsNth vc pth m)
+| (mnil,_) => []  | (mtcons ph pth, 0)  => []
+| (mpcons ph pth, 0) => (pBndngVars vc ph)
+| (mtcons ph pth, S m) => (getBVarsNth vc pth m)
+| (mpcons ph pth, S m) => (getBVarsNth vc pth m)
 end.
 (** CatchFileBetweenTagsBVarsNthEnd *)
 
@@ -308,21 +309,21 @@ Definition lBoundVars {G : CFGV} ( vc  : VarSym G)
   : list( (list (vType vc))) :=
 map (flat_map (getBVarsNth vc lmix)) llbn.
 
-Definition  allBndngVars {G} (vc: VarSym G) (p: TermProd G) 
+Definition  allBndngVars {G} (vc: VarSym G) (p: TermProd G)
   (mix: Mixture (tpRhsAugIsPat p)) : list(list (vType vc)) :=
    lBoundVars vc (bndngPatIndices p) mix.
 
 Module SimplifyForPaper.
 (** CatchFileBetweenTagsAllBndngVarsStart *)
 
-Definition allBndngVars {G} (vc : VarSym G) 
-    (p: TermProd G) (mix: Mixture (tpRhsAugIsPat p)) 
+Definition allBndngVars {G} (vc : VarSym G)
+    (p: TermProd G) (mix: Mixture (tpRhsAugIsPat p))
     : list ( list (vType vc)) :=
 map (flat_map (getBVarsNth vc mix)) (bndngPatIndices p).
 (** CatchFileBetweenTagsAllBndngVarsEnd *)
 End SimplifyForPaper.
 
-Lemma  lBoundVarsSameifNth :  forall {G : CFGV} 
+Lemma  lBoundVarsSameifNth :  forall {G : CFGV}
   ( vc  : VarSym G)
 {la : list (bool # GSym G)} (ma mb: Mixture la),
   (forall (nn : nat),
@@ -337,14 +338,14 @@ Proof.
   intros nn Hinn. cpx.
 Qed.
 
-Lemma  lBoundVarsLenSameifNth :  forall {G : CFGV} 
+Lemma  lBoundVarsLenSameifNth :  forall {G : CFGV}
   ( vc  : VarSym G)
 {la : list (bool # GSym G)} (ma mb: Mixture la),
   (forall (nn : nat),
-  length (getBVarsNth vc ma nn) = 
+  length (getBVarsNth vc ma nn) =
         length (getBVarsNth vc mb nn))
   -> forall (lln : list (list nat)),
-  map (@length _) (lBoundVars vc lln ma) 
+  map (@length _) (lBoundVars vc lln ma)
   =  map (@length _) (lBoundVars vc lln mb).
 Proof.
   intros. unfold lBoundVars.
@@ -377,7 +378,7 @@ Fixpoint onNth {T : Type} {G : CFGV}
   (ft: forall (gs : (GSym G)) (p : Term gs), T)
   (fp: forall (gs : (GSym G)) (p : Pattern gs), T)
   (nilCase : T)
-  (pts : Mixture lgs) 
+  (pts : Mixture lgs)
   (n : nat) : T :=
 match (pts,n) with
 | (mnil,_) => nilCase
@@ -393,12 +394,12 @@ Fixpoint MixMap
   {lgs : MixtureParam}
   (ft: forall (gs : (GSym G)) (p : Term gs), T)
   (fp: forall (gs : (GSym G)) (p : Pattern gs), T)
-  (pts : Mixture lgs) 
+  (pts : Mixture lgs)
    : list T :=
 match pts with
 | mnil => []
-| mtcons sh _ th ttl  => (ft sh th)::(MixMap ft fp ttl)
-| mpcons sh _ ph ptl => (fp sh ph)::(MixMap ft fp ptl)
+| @mtcons _ sh _ th ttl  => (ft sh th)::(MixMap ft fp ttl)
+| @mpcons _ sh _ ph ptl => (fp sh ph)::(MixMap ft fp ptl)
 end.
 
 Lemma MixMapLength : forall
@@ -417,13 +418,13 @@ Fixpoint liftRelPtwise
   {lgs : MixtureParam}
   (ft: forall (gs : (GSym G)) (p : Term gs), T -> [univ])
   (fp: forall (gs : (GSym G)) (p : Pattern gs), T -> [univ])
-  (pts : Mixture lgs) 
+  (pts : Mixture lgs)
   (l : list T)
    : [univ]:=
 match (pts,l) with
 | (mnil,[]) => True
-| (mtcons sh _ th ttl, lh::ltl) => (ft sh th lh)#(liftRelPtwise ft fp ttl ltl)
-| (mpcons sh _ th ttl, lh::ltl) => (fp sh th lh)#(liftRelPtwise ft fp ttl ltl)
+| (@mtcons _ sh _ th ttl, lh::ltl) => (ft sh th lh)#(liftRelPtwise ft fp ttl ltl)
+| (@mpcons _ sh _ th ttl, lh::ltl) => (fp sh th lh)#(liftRelPtwise ft fp ttl ltl)
 | _ => False
 end.
 
@@ -454,18 +455,18 @@ match p with
 end
 with mAllVars {G : CFGV} { vc  : VarSym G}
   {lgs : list (bool * GSym G)} (pts : Mixture lgs)
-   {struct pts} : (list (vType vc))  := 
+   {struct pts} : (list (vType vc))  :=
 match pts with
 | mnil => []
-| mtcons _ _ ph ptl =>  (tAllVars ph) ++ (mAllVars ptl)
-| mpcons _ _ ph ptl => (pAllVars ph) ++ (mAllVars ptl)
+| mtcons ph ptl =>  (tAllVars ph) ++ (mAllVars ptl)
+| mpcons ph ptl => (pAllVars ph) ++ (mAllVars ptl)
 end.
 
 Lemma mBndngVarsAsNth  {G : CFGV} { vc  : VarSym G} :
-  forall 
-  (mp: @MixtureParam G) 
+  forall
+  (mp: @MixtureParam G)
   (m : Mixture mp),
-  mBndngVars vc m 
+  mBndngVars vc m
       = flat_map (getBVarsNth vc  m) (seq 0 (length mp)).
 Proof.
   intros.
@@ -497,11 +498,11 @@ match p with
 end
 with mSize {G : CFGV}
   {lgs : list (bool * GSym G)} (pts : Mixture lgs)
-   : nat  := 
+   : nat  :=
 match pts with
 | mnil => 1
-| mtcons _ _ ph ptl =>  (tSize ph) + (mSize ptl)
-| mpcons _ _ ph ptl => (pSize ph) + (mSize ptl)
+| mtcons ph ptl =>  (tSize ph) + (mSize ptl)
+| mpcons ph ptl => (pSize ph) + (mSize ptl)
 end.
 
 Lemma SizePositive :forall  {G : CFGV},
@@ -514,11 +515,11 @@ Lemma SizePositive :forall  {G : CFGV},
         (forall (l : @MixtureParam G) (m : Mixture l),
             mSize m > 0)).
 Proof.
-  intros. 
+  intros.
   GInduction; intros; allsimpl; try omega.
 Defined.
 
-Definition mcase := snd.
+Definition mcase {A B : Type} : (A * B) -> B := snd.
 Definition tcase {A B C : Type}
   := fun t:A*B*C => fst (fst t).
 Definition pcase {A B C : Type}
@@ -526,7 +527,7 @@ Definition pcase {A B C : Type}
 
 (**
   This lemma is used in the beginning of the proof of decidability of
-  alpha equality. So it needs to be transparent 
+  alpha equality. So it needs to be transparent
   (for alpha equality decider to compute atleast to inl/inr form).
   Hence it is a bit long in order to avoid using the omega tactic.
 *)
@@ -535,33 +536,33 @@ forall {G: CFGV}
 (PT : forall g : GSym G, Term g -> [univ])
 (PP : forall g : GSym G, Pattern g -> [univ])
 (PM : forall l : MixtureParam, Mixture l -> [univ]),
-  (forall (T : Terminal G) (t : tSemType G T), PT (gsymT T) (tleaf T t)) 
+  (forall (T : Terminal G) (t : tSemType G T), PT (gsymT T) (tleaf T t))
   -> (forall (vc : VarSym G) (v : vType vc),
-          PT (gsymTN (vSubstType G vc)) (vleaf vc v)) 
+          PT (gsymTN (vSubstType G vc)) (vleaf vc v))
   -> (forall (p : TermProd G) (m : Mixture (tpRhsAugIsPat p)),
-          PM (tpRhsAugIsPat p) m 
-          -> PT (gsymTN (tpLhs G p)) (tnode p m)) 
-  -> (forall (T : Terminal G) (t : tSemType G T), PP (gsymT T) (ptleaf T t)) 
-  -> (forall (vc : VarSym G) (v : vType vc), 
-          PP (gsymV vc) (pvleaf vc v)) 
+          PM (tpRhsAugIsPat p) m
+          -> PT (gsymTN (tpLhs G p)) (tnode p m))
+  -> (forall (T : Terminal G) (t : tSemType G T), PP (gsymT T) (ptleaf T t))
+  -> (forall (vc : VarSym G) (v : vType vc),
+          PP (gsymV vc) (pvleaf vc v))
   -> (forall (p : EmbedProd G) (t : Term (gsymTN (epRhs G p))),
-          PT (gsymTN (epRhs G p)) t 
-          -> PP (gsymPN (epLhs G p)) (embed p t)) 
-  -> (forall (p : PatProd G) 
+          PT (gsymTN (epRhs G p)) t
+          -> PP (gsymPN (epLhs G p)) (embed p t))
+  -> (forall (p : PatProd G)
           (m : Mixture (map (fun x : GSym G => (true, x)) (ppRhsSym p))),
-          PM (map (fun x : GSym G => (true, x)) (ppRhsSym p)) m 
-          -> PP (gsymPN (ppLhs G p)) (pnode p m)) 
-  ->  PM [] mnil 
+          PM (map (fun x : GSym G => (true, x)) (ppRhsSym p)) m
+          -> PP (gsymPN (ppLhs G p)) (pnode p m))
+  ->  PM [] mnil
   ->  (forall (h : GSym G) (tl : MixtureParam) (ph : Term h),
          (forall (phnew:Term h), tSize phnew <= tSize ph -> PT h phnew)
           -> forall ptl : Mixture tl,
              PM tl ptl
-             -> PM ((false, h) :: tl) (mtcons ph ptl)) 
+             -> PM ((false, h) :: tl) (mtcons ph ptl))
   ->  (forall (h : GSym G) (tl : MixtureParam) (ph : Pattern h),
          (forall (phnew:Pattern h), pSize phnew <= pSize ph -> PP h phnew)
           -> forall ptl : Mixture tl,
-              PM tl ptl 
-              -> PM ((true, h) :: tl) (mpcons ph ptl)) 
+              PM tl ptl
+              -> PM ((true, h) :: tl) (mpcons ph ptl))
   -> ((forall (g : GSym G) (p : Term g), PT g p)
          *
       (forall (g : GSym G) (p : Pattern g), PP g p)
@@ -573,11 +574,11 @@ assert( forall n: nat,
 (
   (forall (g : GSym G) (p : Term g), (tSize p = n) -> PT g p)
   * (forall (g : GSym G) (p : Pattern g), (pSize p = n) -> PP g p)
-  * (forall (l : list (bool # GSym G)) (m : Mixture l), 
+  * (forall (l : list (bool # GSym G)) (m : Mixture l),
       (mSize m = n) -> PM l m)
 )) as XX;
     [|
-    dands; intros; 
+    dands; intros;
      try(apply ((tcase (XX _)) _ _ eq_refl));
      try(apply ((pcase (XX _)) _ _ eq_refl));
      try(apply ((mcase (XX _)) _ _ eq_refl)); fail].
@@ -597,7 +598,7 @@ assert( forall n: nat,
     + pose proof (tcase SizePositive _  ph).
       specialize (Hind (mSize ptl)).
       dimp Hind; [| repnd; cpx; fail].
-      rw <- HGInd1. 
+      rw <- HGInd1.
       rewrite (plus_n_O (mSize ptl)) at 1.
       rewrite (plus_comm (tSize ph)).
       apply plus_le_lt_compat; auto.
@@ -613,7 +614,7 @@ assert( forall n: nat,
     + pose proof (pcase SizePositive _  ph).
       specialize (Hind (mSize ptl)).
       dimp Hind; [| repnd; cpx; fail].
-      rw <- HGInd1. 
+      rw <- HGInd1.
       rewrite (plus_n_O (mSize ptl)) at 1.
       rewrite (plus_comm (pSize ph)).
       apply plus_le_lt_compat; auto.
@@ -636,17 +637,17 @@ Hint Rewrite lBoundVarsLength : fast.
 
 
 
-Definition lvKeep {G : CFGV} 
+Definition lvKeep {G : CFGV}
   {vc  : VarSym G}
   (lvKeep : list (vType vc))
-  (lv : list (vType vc)) := 
+  (lv : list (vType vc)) :=
 lKeep (DeqVtype vc) lvKeep lv.
 
 
 
 (* gets all but binders.
   The intention is that for any vc,
-  [mAllButBinders m = mAllvars m -  mBndngVars m] 
+  [mAllButBinders m = mAllvars m -  mBndngVars m]
  *)
 Fixpoint pAllButBinders
        {G  : CFGV}
@@ -669,9 +670,9 @@ with mAllButBinders
      : (list (vType vc))  :=
   match pts with
     | mnil  => []
-    | mtcons _ _ ph ptl => 
+    | mtcons ph ptl =>
             (tAllVars ph) ++ (mAllButBinders vc ptl)
-    | mpcons _ _ ph ptl =>
+    | mpcons ph ptl =>
            (pAllButBinders vc ph) ++ (mAllButBinders vc ptl)
   end.
 
@@ -697,11 +698,11 @@ match p with
 end
 with mBndngVarsDeep {G : CFGV} (vc : VarSym G)
   {lgs : list (bool * GSym G)} (pts : Mixture lgs)
-   {struct pts} : (list (vType vc))  := 
+   {struct pts} : (list (vType vc))  :=
 match pts with
 | mnil => []
-| mtcons _ _ ph ptl =>  (tBndngVarsDeep vc ph) ++ (mBndngVarsDeep vc ptl)
-| mpcons _ _ ph ptl => (pBndngVarsDeep vc ph) ++ (mBndngVarsDeep vc ptl)
+| mtcons ph ptl =>  (tBndngVarsDeep vc ph) ++ (mBndngVarsDeep vc ptl)
+| mpcons ph ptl => (pBndngVarsDeep vc ph) ++ (mBndngVarsDeep vc ptl)
 end.
 
 
@@ -730,22 +731,22 @@ with mAlreadyBndBinders
      : (list (vType vc))  :=
   match pts with
     | mnil  => []
-    | mtcons _ _ ph ptl => 
+    | mtcons ph ptl =>
             (tBndngVarsDeep vc ph) ++ (mAlreadyBndBinders vc ptl)
-    | mpcons _ _ ph ptl =>
+    | mpcons ph ptl =>
            (pAlreadyBndBinders vc ph) ++ (mAlreadyBndBinders vc ptl)
   end.
 
-(* patterns do not have internal bindings 
+(* patterns do not have internal bindings
     (members of [PatProd] do not specify binding info).
    Hence the [nil] *)
 
-Infix "--" 
+Infix "--"
   := subtractv (right associativity, at level 60) : list_scope.
 
 (** CatchFileBetweenTagsFreevarsStart *)
 
-Fixpoint tfreevars {G}(vc : VarSym G) {gs} 
+Fixpoint tfreevars {G}(vc : VarSym G) {gs}
     (p : Term gs) : list (vType vc) :=
 match p with
 | tleaf _ _ => []
@@ -755,20 +756,20 @@ match p with
                    end
 | tnode p m => mfreevars vc m (allBndngVars vc p m)
 end
-with pfreevars {G} (vc : VarSym G) {gs} 
+with pfreevars {G} (vc : VarSym G) {gs}
     (p : Pattern gs) : list (vType vc)  :=
 match p with
 | ptleaf _ _ => []  | pvleaf vcc var => []
-| pnode p lpt => mfreevars vc lpt [] 
+| pnode p lpt => mfreevars vc lpt []
 | embed vcc nt => tfreevars vc nt
 end
 with mfreevars {G} (vc: VarSym G) {lgs} (m: Mixture lgs)
-  (llB : list (list (vType vc))) : list (vType vc) := 
+  (llB : list (list (vType vc))) : list (vType vc) :=
 match m with
 | mnil  => []
-| mtcons _ _ h tl => (tfreevars vc h -- lhead llB) 
+| mtcons h tl => (tfreevars vc h -- lhead llB)
                         ++ mfreevars vc tl (tail llB)
-| mpcons _ _ h tl => (pfreevars vc h -- lhead llB)
+| mpcons h tl => (pfreevars vc h -- lhead llB)
                         ++ mfreevars vc tl (tail llB)
 end.
 
@@ -803,9 +804,9 @@ Ltac DDeq := repeat (one_ddeq; on_eqs; GC; auto).
 
 Ltac DDeqs := repeat (one_ddeq; on_eqs; GC; allsimpl; auto).
 
-Lemma bindersDeep_in_allvars : forall 
+Lemma bindersDeep_in_allvars : forall
   {G : CFGV} {vc : VarSym G},
-  
+
   (
     (forall (gs : GSym G) (t : Term gs),
        subset (tBndngVarsDeep vc t) (tAllVars t))
@@ -840,7 +841,7 @@ Proof.
   rw diff_app_l; sp.
 Qed.
 
-Lemma subtractv_disjoint_subset : 
+Lemma subtractv_disjoint_subset :
 forall {G : CFGV} {vc : VarSym G}
   (vs l1 l2 : list (vType vc)),
     subset l1 l2
@@ -851,7 +852,7 @@ Proof.
   allrw in_diff; sp.
 Qed.
 
-Lemma subtractv_disjoint : 
+Lemma subtractv_disjoint :
   forall {G : CFGV} {vc : VarSym G}
   vs l, disjoint l (@subtractv G vc vs l).
 Proof.
@@ -877,7 +878,7 @@ Proof.
 Qed.
 
 
-Theorem AllButBindersSubset: forall 
+Theorem AllButBindersSubset: forall
   {G : CFGV} {vc  : VarSym G},
 (   forall (s : GSym G) (nt : Term s),
       True)
@@ -892,16 +893,16 @@ Theorem AllButBindersSubset: forall
            (mAllVars m)
 ).
 Proof. intros.
-  GInduction; intros; cpx; allsimpl; 
+  GInduction; intros; cpx; allsimpl;
   eauto using subset_app_l, subset_app_r;
   apply app_subset;
   dands; eauto using subset_app_l, subset_app_r.
 Qed.
 
 Lemma getBVarsNthRange :
-forall {G : CFGV} {vc  : VarSym G} (mp : MixtureParam) 
-  (m : Mixture mp) (nn: nat), 
-    nn >= length mp 
+forall {G : CFGV} {vc  : VarSym G} (mp : MixtureParam)
+  (m : Mixture mp) (nn: nat),
+    nn >= length mp
     -> (getBVarsNth vc m nn) = [].
 Proof.
   induction m; introv Hgt; cpx;
@@ -917,7 +918,7 @@ Proof.
 Qed.
 
 Lemma getBVarsNthRangeContra :
-forall {G : CFGV} {vc  : VarSym G} (mp : MixtureParam) 
+forall {G : CFGV} {vc  : VarSym G} (mp : MixtureParam)
   (m : Mixture mp) (nn: nat)
   (x : vType vc),
   LIn x (getBVarsNth vc m nn)
@@ -929,8 +930,8 @@ Proof.
 Qed.
 
 Lemma lBoundVarsmBndngVars :
-forall {G : CFGV} {vc  : VarSym G} (mp : MixtureParam) 
-  (m : Mixture mp) 
+forall {G : CFGV} {vc  : VarSym G} (mp : MixtureParam)
+  (m : Mixture mp)
   (lll : list (list nat)),
   subset (flatten (lBoundVars vc lll m))
          (mBndngVars vc m ).
@@ -961,7 +962,7 @@ Lemma bindersSubsetDeep: forall {G : CFGV} {vc  : VarSym G},
            (mBndngVarsDeep vc m)
 ).
 Proof.
-  intros. GInduction; intros; cpx; allsimpl; 
+  intros. GInduction; intros; cpx; allsimpl;
   eauto using subset_app_l, subset_app_r;
   [Case "mpcons"].
   apply app_subset.
@@ -982,26 +983,26 @@ Theorem bindersAllvarsSubset: forall {G : CFGV} {vc  : VarSym G},
            (mAllVars m)
 ).
 Proof.
-  intros. GInduction; intros; cpx; allsimpl; 
+  intros. GInduction; intros; cpx; allsimpl;
   eauto using subset_app_l, subset_app_r;
   [Case "mpcons"].
   apply app_subset.
   dands; eauto using subset_app_l, subset_app_r.
 Qed.
 
-Hint Resolve 
-  (fun G vc => mcase (@ AllButBindersSubset G vc)) 
-  (fun G vc => pcase (@ AllButBindersSubset G vc)) 
-  (fun G vc => mcase (@ bindersAllvarsSubset G vc)) 
-  (fun G vc => pcase (@ bindersAllvarsSubset G vc)) 
-  (fun G vc => mcase (@ bindersSubsetDeep G vc)) 
-  (fun G vc => pcase (@ bindersDeep_in_allvars G vc)) 
-  (fun G vc => mcase (@ bindersDeep_in_allvars G vc)) 
-  (fun G vc => tcase (@ bindersDeep_in_allvars G vc)) 
+Hint Resolve
+  (fun G vc => mcase (@ AllButBindersSubset G vc))
+  (fun G vc => pcase (@ AllButBindersSubset G vc))
+  (fun G vc => mcase (@ bindersAllvarsSubset G vc))
+  (fun G vc => pcase (@ bindersAllvarsSubset G vc))
+  (fun G vc => mcase (@ bindersSubsetDeep G vc))
+  (fun G vc => pcase (@ bindersDeep_in_allvars G vc))
+  (fun G vc => mcase (@ bindersDeep_in_allvars G vc))
+  (fun G vc => tcase (@ bindersDeep_in_allvars G vc))
   lBoundVarsmBndngVars
   : SetReasoning.
 
-Lemma  mBndngVarsSameIfNth :  forall {G : CFGV} 
+Lemma  mBndngVarsSameIfNth :  forall {G : CFGV}
   ( vc  : VarSym G)
 {la : list (bool # GSym G)} (ma mb: Mixture la),
   (forall (nn : nat),
@@ -1015,7 +1016,7 @@ Proof.
 Qed.
 
 
-Lemma eqSetDeepShallowPlusAlready: 
+Lemma eqSetDeepShallowPlusAlready:
 forall {G : CFGV} {vc  : VarSym G},
 (   forall (s : GSym G) (nt : Term s), True)
 *
@@ -1039,7 +1040,7 @@ Proof.
   eapply eqset_trans;[|apply eqsetCommute]; cpx.
 
 - Case "mpcons".
-  allsimpl. 
+  allsimpl.
   eapply eqset_trans;[|apply eqsetCommute3].
   rw <- app_assoc.
   rw  app_assoc.
@@ -1047,7 +1048,7 @@ Proof.
   eapply eqset_trans;[|apply eqsetCommute]. cpx.
 Qed.
 
-Lemma disjointDeepShallowPlusAlready: 
+Lemma disjointDeepShallowPlusAlready:
 forall {G : CFGV} {vc  : VarSym G}
   (l : list (bool # GSym G)) (m : Mixture l) lva,
   disjoint (mBndngVars vc m ++ mAlreadyBndBinders vc m) lva

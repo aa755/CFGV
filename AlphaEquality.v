@@ -26,7 +26,7 @@ Require Export Swap.
 Set Implicit Arguments.
 
 Section GramVC.
-Variable G : CFGV. 
+Variable G : CFGV.
 Variable vc  : VarSym G.
 
 Notation vcDeq := (DeqVtype vc).
@@ -49,23 +49,23 @@ Inductive Abstraction : Type :=
 
 (** CatchFileBetweenTagsMakeAbsStart *)
 
-Fixpoint MakeAbstractions {lgs} (m : Mixture lgs) 
+Fixpoint MakeAbstractions {lgs} (m : Mixture lgs)
  (llB : list (list (vType vc))): list Abstraction :=
 match m with
 | mnil => []
-| mtcons _ _ h tl=> (termAbs (lhead llB) h
+| mtcons h tl=> (termAbs (lhead llB) h
                       ::(MakeAbstractions tl (tail llB)))
-| mpcons _ _ h tl=> (patAbs (lhead llB) h
+| mpcons h tl=> (patAbs (lhead llB) h
                       ::(MakeAbstractions tl (tail llB)))
 end.
 
 (** CatchFileBetweenTagsMakeAbsEnd *)
 
 
-Definition MakeAbstractionsTNodeAux 
+Definition MakeAbstractionsTNodeAux
     (lln: list (list nat))
     (mp : MixtureParam)
-    (m :Mixture mp) 
+    (m :Mixture mp)
       : list Abstraction
 := MakeAbstractions m (lBoundVars vc lln m).
 
@@ -86,8 +86,8 @@ Definition swapAbs
            (sw : Swapping vc)
     : Abstraction :=
 match a with
-| termAbs _ lbv t => termAbs (swapLVar sw lbv) (tSwap t sw)
-| patAbs _ lbv t => patAbs (swapLVar sw lbv) (pSwap t sw)
+| termAbs lbv t => termAbs (swapLVar sw lbv) (tSwap t sw)
+| patAbs lbv t => patAbs (swapLVar sw lbv) (pSwap t sw)
 end.
 
 Definition swapLAbs
@@ -111,7 +111,7 @@ Lemma swapBndngVarsCommute:
 ).
 Proof.
  GInduction; allsimpl; introns Hyp; intros; cpx; [ |  | | ].
-- Case "pvleaf". rewrite DeqSym. symmetry. 
+- Case "pvleaf". rewrite DeqSym. symmetry.
   rewrite DeqSym. destruct_head_match;
   subst; auto.
 - Case "pnode". simpl. simpl pBndngVars.
@@ -132,7 +132,7 @@ Lemma  swapLBoundVarsCommute : forall
  (sw: Swapping vc)
  (la: list (list nat)),
  (swapLLVar sw) (lBoundVars vc la m)
-= 
+=
 lBoundVars vc la
  (mSwap m sw).
 Proof.
@@ -229,7 +229,7 @@ Inductive pairWiseRelated {A B:Type}
 (** CatchFileBetweenTagsAlphaStart *)
 
 Notation zip := (combine).
-Inductive tAlphaEq: forall {gs : (GSym G)}, 
+Inductive tAlphaEq: forall {gs : (GSym G)},
       (Term gs) -> (Term gs) -> Type :=
 | alt: forall T t, tAlphaEq (tleaf T t) (tleaf T t)
 | alv: forall V v, tAlphaEq (vleaf V v) (vleaf V v)
@@ -309,9 +309,9 @@ forall (P : forall gs : GSym G, Term gs -> Term gs -> [univ])
        (forall (V : VarSym G) (v : vType V),
         P (gsymTN (vSubstType G V)) (vleaf V v) (vleaf V v)) ->
        (forall (p : TermProd G) (ma mb : Mixture (tpRhsAugIsPat p)),
-        lAlphaEqAbs (MakeAbstractions ma (allBndngVars vc p ma)) 
+        lAlphaEqAbs (MakeAbstractions ma (allBndngVars vc p ma))
               (MakeAbstractions mb (allBndngVars vc p mb)) ->
-        PLA (MakeAbstractions ma (allBndngVars vc p ma)) 
+        PLA (MakeAbstractions ma (allBndngVars vc p ma))
             (MakeAbstractions mb (allBndngVars vc p mb)) ->
         P (gsymTN (tpLhs G p)) (tnode p ma) (tnode p mb)) ->
        (forall (T : Terminal G) (t : tSemType G T),
@@ -368,7 +368,7 @@ intros. dands.
 - eapply lAlphaEqAbsMut; eauto.
 Defined.
 
-  
+
 Definition mAlphaEq
    {mp : MixtureParam}
    (ma mb : Mixture mp)
@@ -405,7 +405,7 @@ forall (vc: VarSym G), tAlphaEq vc ta tb.
 *)
 
 (*
-Inductive tAlphaEq: forall {gs : (GSym G)}, 
+Inductive tAlphaEq: forall {gs : (GSym G)},
       (Term gs) -> (Term gs) -> [univ] :=
 | alt: forall T t, tAlphaEq (tleaf T t) (tleaf T t)
 | alv: forall V v, tAlphaEq (vleaf V v) (vleaf V v)
@@ -446,10 +446,10 @@ with AlphaEqAbs : Abstraction -> Abstraction -> [univ] :=
     -> disjoint (lbva ++ lbvb) lbnew
     -> pAlphaEq (pSwap tma swapa) (pSwap tmb swapb)
     -> AlphaEqAbs (patAbs lbva tma) (patAbs lbvb tmb)
-with lAlphaEqAbs: 
+with lAlphaEqAbs:
       list Abstraction -> list Abstraction -> [univ] :=
 | lAlAbsNil : lAlphaEqAbs [] []
-| lAlAbsCons : forall (ha hb: Abstraction) 
-    (la lb: list Abstraction), AlphaEqAbs ha hb 
+| lAlAbsCons : forall (ha hb: Abstraction)
+    (la lb: list Abstraction), AlphaEqAbs ha hb
     -> lAlphaEqAbs la lb  -> lAlphaEqAbs (ha::la) (hb::lb).
 *)

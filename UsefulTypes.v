@@ -32,8 +32,8 @@ Require Export Basics.
 Require Export Bool.
 Require Export Arith.
 Require Export Arith.EqNat.
-Require Omega.
-
+Require Import Omega.
+Require Import NPeano.
 
 (* Prop/Type exists depending on the switch universe-type.v/universe-prop.v *)
 Notation "{ a , b : T $ P }" :=
@@ -317,21 +317,21 @@ Proof.
   sp; split; sp.
 Qed.
 
-Definition isInl {A B : Type} 
+Definition isInl {A B : Type}
     (d : A + B) : bool :=
 match d with
 | inl _ => true
 | inr _ => false
 end.
 
-Definition isInr {A B : Type} 
+Definition isInr {A B : Type}
     (d : A + B) : bool :=
 match d with
 | inl _ => false
 | inr _ => true
 end.
 
-Definition isInlInl {A B C D: Type} 
+Definition isInlInl {A B C D: Type}
     (d : (A + B) + (C + D)) : bool :=
 match d with
 | inl (inl _) => true
@@ -339,20 +339,20 @@ match d with
 end.
 
 
-Definition liftNth {A: Type} 
+Definition liftNth {A: Type}
     (f : A-> bool) (l : list A ) (n:nat) : bool :=
 match (nth_error l n) with
 | Some x => f x
 | None => false
 end.
 
-Definition liftInl {A B : Type} 
+Definition liftInl {A B : Type}
     (f : A -> bool) (d : A + B) : bool :=
 match d with
 | inl a => f a
 | inr _ => false
 end.
-  
+
 Notation deq_nat := NPeano.Nat.eq_dec.
 Hint Resolve NPeano.Nat.eq_dec : Deq.
 
@@ -421,8 +421,8 @@ Tactic Notation "refl" := reflexivity.
 
 Theorem and_tiff_compat_l:
  forall A B C : [univ], (B <=> C) -> (A # B <=> A # C).
-Proof. 
- introv Hiff. rw Hiff. apply t_iff_refl. 
+Proof.
+ introv Hiff. rw Hiff. apply t_iff_refl.
 Qed.
 
 Definition transport {T:Type} {a b:T} {P:T -> Type} (eq:a=b) (pa: P a) : (P b):=
@@ -452,7 +452,7 @@ Definition left_identity {S T : Type} (f: S -> T) (g: T-> S): Type :=
  forall s: S , (g (f s)) = s.
 
 Definition bijection  {S T : Type} (f: S -> T) (g: T-> S) : Type
- := prod (left_identity f g)  (left_identity g f). 
+ := prod (left_identity f g)  (left_identity g f).
 
 Definition injection {S T : Type} (f: S -> T) :=
   forall (s1 s2 : S), (f s1 = f s2) -> s1=s2.
@@ -476,7 +476,7 @@ Definition equipollent (A B : Type)
 Definition Csurjection {S T : Type} (f: S -> T) :=
   forall (t : T), {s : S $ f s =t}.
 
-Lemma injection_surjection_equipollent 
+Lemma injection_surjection_equipollent
   : forall {S T : Type} (f: S -> T) ,
   injection f
   -> Csurjection f
@@ -489,7 +489,7 @@ http://cstheory.stackexchange.com/questions/18962/formalizing-the-theory-of-fini
 Definition Fin (n:nat)
   := {m:nat & if lt_dec m n then unit else void}.
 
- 
+
 Lemma Fin_eq:
   forall (n: nat) (fa fb : Fin n),
     (projT1 fa) = (projT1 fb)
@@ -516,9 +516,9 @@ Defined.
 
 Hint Resolve Fin_decidable : Deq.
 
-Lemma equipollent_Deq : forall (A B:Type), 
-    Deq A 
-    -> equipollent A B 
+Lemma equipollent_Deq : forall (A B:Type),
+    Deq A
+    -> equipollent A B
     -> Deq B.
 Proof.
   unfold Deq, equipollent, bijection.
@@ -540,14 +540,14 @@ Abort.
 
 (** This is a strong constructive version of
     finiteness of a type. It says that
-    there should be a bijection between 
+    there should be a bijection between
     some finite initial segment of numbers
     and that type *)
 Definition Finite (T : Type) :=
   {n:nat $ equipollent ( Fin n) T}.
 
-Lemma Finite_Deq : forall (A:Type), 
-    Finite A 
+Lemma Finite_Deq : forall (A:Type),
+    Finite A
     -> Deq A.
 Proof.
   introv Hf.
@@ -606,9 +606,9 @@ Proof.
   apply lt_n_S in Hgt.
   eauto.
 Qed.
-Ltac dforall_lt_hyp name := 
+Ltac dforall_lt_hyp name :=
   repeat match goal with
-  [ H : forall  n : nat , n< S ?m -> ?C |- _ ] => 
+  [ H : forall  n : nat , n< S ?m -> ?C |- _ ] =>
     apply forall_num_lt_d in H;
     let Hyp := fresh name in
     destruct H as [Hyp H]
@@ -657,22 +657,22 @@ Qed.
 (** copied from Coq.Logic.EqDep_dec.v
     and converted things from Prop to Type
     (and ex to sigT) *)
-  
- Let projT {A : Type} {x: A} (dec: Deq A) 
+
+ Let projT {A : Type} {x: A} (dec: Deq A)
   {P:A -> Type} (exP: sigT P) (def:P x) : P x :=
    match exP with
-     | existT x' prf =>
+     | existT _ x' prf =>
        match dec x' x with
          | left eqprf => eq_rect x' P prf x eqprf
          | _ => def
        end
    end.
- Theorem injRightsigT: 
+ Theorem injRightsigT:
    forall  {A : Type} {x: A} (dec: Deq A) (P:A -> Type)  (y y':P x),
      existT P x y = existT P x y' -> y = y'.
  Proof.
    intros.
-   cut (projT dec 
+   cut (projT dec
       (existT _ x y) y = projT dec (existT _ x y') y).
    simpl.
    case (dec x x).
@@ -691,7 +691,7 @@ Qed.
 Ltac EqDecSndEq :=
   let dec:= fresh "dec" in
 repeat match goal with
-[H : @existT ?A _ _ _ = _ |- _ ] => 
+[H : @existT ?A _ _ _ = _ |- _ ] =>
   assert (Deq A) as dec by eauto with Deq;
   apply (injRightsigT dec) in H; clear dec
 end.
@@ -711,7 +711,7 @@ Lemma DeqSym:  forall {A} T (deq : Deq A) (a b: A)
   match deq a b with
   | left p => f p
   | _ => c
-  end 
+  end
   =
   match deq b a with
   | left p => f (eq_sym p)
@@ -769,14 +769,14 @@ Definition sigTDeq
     apply Hneq. exact Heq.
 Defined.
 
-Definition Deq2Bool {A : Type} (deq : Deq A) (a b : A) 
+Definition Deq2Bool {A : Type} (deq : Deq A) (a b : A)
   : bool.
 destruct (deq a b);[exact true | exact false].
 Defined.
 
 Hint Resolve sigTDeq : Deq.
 
-  
+
 Lemma and_true_r :
   forall t, t # True <=> t.
 Proof. sp; split; sp. Qed.

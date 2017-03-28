@@ -44,8 +44,8 @@ Definition oneSwapVar
 Definition Swapping {G} (vc  : VarSym G)
 := list (vType vc * vType vc).
 
-Definition swapVar {G} {vc : VarSym G} 
-  (sw : Swapping vc) (v : vType vc) : vType vc 
+Definition swapVar {G} {vc : VarSym G}
+  (sw : Swapping vc) (v : vType vc) : vType vc
 := fold_left oneSwapVar sw v .
 
 (** CatchFileBetweenTagsSwapVarEnd *)
@@ -95,9 +95,9 @@ with mSwap
      : Mixture lgs  :=
   match pts in Mixture lgs return Mixture lgs with
     | mnil  => mnil
-    | mtcons _ _ ph ptl =>
+    | mtcons ph ptl =>
       mtcons (tSwap ph sub) (mSwap ptl sub)
-    | mpcons _ _ ph ptl =>
+    | mpcons ph ptl =>
       mpcons (pSwap ph sub) (mSwap ptl  sub)
   end.
 
@@ -132,14 +132,14 @@ Definition mFresh
   disjoint hlnew (flat_map mAllVars ms)
   # no_repeats hlnew.
 
-Lemma tFreshSubset : forall 
+Lemma tFreshSubset : forall
            {G  : CFGV}
            {vc : VarSym G}
            {sym : GSym G}
            (hlnew : list (vType vc))
            (tsa tsb : list (Term sym)),
-tFresh hlnew tsa 
--> subset tsb tsa 
+tFresh hlnew tsa
+-> subset tsb tsa
 -> tFresh hlnew tsb.
 Proof.
   introns XX. unfold tFresh.
@@ -147,41 +147,41 @@ Proof.
   dands; [ SetReasoning | trivial].
 Qed.
 
-Lemma pFreshSubset : forall 
+Lemma pFreshSubset : forall
            {G  : CFGV}
            {vc : VarSym G}
            {sym : GSym G}
            (hlnew : list (vType vc))
            (tsa tsb : list (Pattern sym)),
-pFresh hlnew tsa 
--> subset tsb tsa 
+pFresh hlnew tsa
+-> subset tsb tsa
 -> pFresh hlnew tsb.
 Proof.
   introns XX. unfold pFresh.
   unfold pFresh in XX. repnd;
   dands; [ SetReasoning | trivial].
 Qed.
-   
+
 Hint Resolve pFreshSubset tFreshSubset : SetReasoning.
 
 Definition EquiVariantRel {G : CFGV} {vc : VarSym G}
-  {TA :Type} 
+  {TA :Type}
   {TB :Type}
   (swapA : TA -> Swapping vc -> TA)
   (swapB : TB -> Swapping vc -> TB)
   (R : TA -> TB -> [univ]) :=
   forall (ta : TA) (tb: TB),
-  R ta tb 
+  R ta tb
   -> forall (sw : Swapping vc), R (swapA ta sw) (swapB tb sw).
-  
+
 Definition EquiVariantRelSame {G : CFGV} {vc : VarSym G}
-  {TA :Type} 
+  {TA :Type}
   (swapA : TA -> Swapping vc -> TA)
   (R : TA -> TA -> [univ]) :=
   EquiVariantRel swapA swapA R.
 
 Definition EquiVariantRelUn {G : CFGV} {vc : VarSym G}
-  {TA :Type} 
+  {TA :Type}
   (swapA : TA -> Swapping vc -> TA)
   (R : TA -> [univ]) :=
   forall (ta : TA),
@@ -189,7 +189,7 @@ Definition EquiVariantRelUn {G : CFGV} {vc : VarSym G}
   -> forall (sw : Swapping vc), R (swapA ta sw).
 
 Definition EquiVariantFn {G : CFGV} {vc : VarSym G}
-  {TA :Type} 
+  {TA :Type}
   {TB :Type}
   (swapA : TA -> Swapping vc -> TA)
   (swapB : TB -> Swapping vc -> TB)
@@ -198,7 +198,7 @@ Definition EquiVariantFn {G : CFGV} {vc : VarSym G}
   swapB (f ta) sw = f (swapA ta sw).
 
 Definition EquiVariantFn2 {G : CFGV} {vc : VarSym G}
-  {TA :Type} 
+  {TA :Type}
   {TB :Type}
   {TC :Type}
   (swapA : TA -> Swapping vc -> TA)
@@ -209,7 +209,7 @@ Definition EquiVariantFn2 {G : CFGV} {vc : VarSym G}
   swapC (f ta tb) sw = f (swapA ta sw) (swapB tb sw).
 
 Definition EquiVariantFn3 {G : CFGV} {vc : VarSym G}
-  {TA :Type} 
+  {TA :Type}
   {TB :Type}
   {TC :Type}
   {TD :Type}
@@ -228,7 +228,7 @@ Definition swapLVar
            (lv : list (vType vc)) : list (vType vc) :=
   map (swapVar sw) lv.
 
-Definition swapLLVar 
+Definition swapLLVar
            {G  : CFGV}
            {vc :  VarSym G}
            (s : Swapping vc)
@@ -264,9 +264,9 @@ with mSwapEmbed
   match pts in Mixture lgs return Mixture lgs with
     | mnil  => mnil
    (* will not happen *)
-    | mtcons _ _ ph ptl => mtcons ph (mSwapEmbed ptl swEmbed)
-    | mpcons _ _ ph ptl =>
-           mpcons (pSwapEmbed ph  swEmbed) 
+    | mtcons ph ptl => mtcons ph (mSwapEmbed ptl swEmbed)
+    | mpcons ph ptl =>
+           mpcons (pSwapEmbed ph  swEmbed)
                   (mSwapEmbed ptl swEmbed)
   end.
 

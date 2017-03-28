@@ -23,14 +23,15 @@
 
 *)
 Require Export AssociationList.
+Require Import Omega.
 (** printing #  $\times$ #×# *)
 (** printing &  $\times$ #×# *)
 
 (** CatchFileBetweenTagsVarTypeStart *)
 Record VarType := {
   typ : Type;  eqdec : Deq typ;
-  fresh : forall (avoid : list typ) (sugg : list typ),typ; 
-  freshCorrect: forall (avoid : list typ) 
+  fresh : forall (avoid : list typ) (sugg : list typ),typ;
+  freshCorrect: forall (avoid : list typ)
     (sugg : list typ), !(LIn (fresh avoid sugg) avoid)
 }.
 (** CatchFileBetweenTagsVarTypeEnd *)
@@ -41,7 +42,7 @@ Record VarType := {
     The equality should be decidable
     and it should be always possible
     to pick a fresh name.
-    
+
     The definition of [fresh] should
     not use any opaque definitions/lemmas.
 
@@ -53,7 +54,7 @@ Record VarType := {
 
 
 Fixpoint FreshDistinctRenamings
-  (VT : VarType) 
+  (VT : VarType)
   (lv :list (typ VT ))
   (lvAvoid :list (typ VT ))
   {struct lv}
@@ -67,15 +68,15 @@ match  lv with
 end.
 
 Lemma FreshDistRenSpec: forall
-  (VT : VarType) 
+  (VT : VarType)
   (lv :list (typ VT ))
   (lvAvoid :list (typ VT )),
   let sw := (FreshDistinctRenamings VT lv  lvAvoid) in
-  no_repeats (ALRange sw) 
-  # disjoint (ALRange sw) lvAvoid 
+  no_repeats (ALRange sw)
+  # disjoint (ALRange sw) lvAvoid
   # ALDom sw = lv.
 Proof.
-  induction lv as [| h tl Hind]; intros; 
+  induction lv as [| h tl Hind]; intros;
   [dands; cpx|].
   allsimpl. destruct VT; allsimpl.
   exrepnd.
@@ -87,16 +88,16 @@ Proof.
     apply Hind1; cpx.
   - repeat (disjoint_reasoning).
 Defined.
-    
+
 (* might not compute.
     saves time in proofs.
     destruction of it gives the properties too *)
 Lemma FreshDistRenWSpec: forall
-  (VT : VarType) 
+  (VT : VarType)
   (lv :list (typ VT ))
   (lvAvoid :list (typ VT )),
   {lvn : list (typ VT ) $
-  no_repeats lvn # disjoint lvn lvAvoid 
+  no_repeats lvn # disjoint lvn lvAvoid
   # length lvn= length lv}.
 Proof.
   intros.
@@ -133,7 +134,7 @@ Lemma FreshDistVarsSpec: forall
   let lvn := (FreshDistinctVars T lv  lvAvoid) in
   no_repeats lvn # disjoint lvn lvAvoid # length lvn= length lv.
 Proof.
-  induction lv as [| h tl Hind]; intros; subst lvn; 
+  induction lv as [| h tl Hind]; intros; subst lvn;
   [dands; cpx|].
   allsimpl. destruct T. allsimpl.
   exrepnd.
@@ -151,7 +152,7 @@ Require Export variables.
 
 Definition nvarVarType: VarType.
 Proof.
-  eapply Build_VarType with 
+  eapply Build_VarType with
     (typ:=NVar)
     (fresh:= (fun (la ls : list NVar) =>  fresh_var la))
                   ; eauto with Deq.
@@ -163,7 +164,7 @@ Defined.
     library *)
 Hint Resolve nvarVarType : VarType.
 
-  Lemma map_length : forall {A B} (f: A->B) (l : list A), 
+  Lemma map_length : forall {A B} (f: A->B) (l : list A),
     length (map f l) = length l.
   Proof.
     induction l; simpl; auto.
@@ -230,7 +231,7 @@ Proof.
   intros. simpl. auto.
 Qed.
 
-Fixpoint freshStringAux (maxLen: nat) 
+Fixpoint freshStringAux (maxLen: nat)
   (avoid : list string)
   (sugg : list string) :=
 match maxLen with
@@ -245,14 +246,14 @@ end.
 Definition freshString
   (avoid : list string)
   (sugg : list string) :=
-  freshStringAux (S (lmax (map length avoid) 
+  freshStringAux (S (lmax (map length avoid)
           - length (shead sugg))) avoid sugg.
 
 
 Lemma freshStringAuxSpec:
   forall sugg (avoid : list string) lm,
   !LIn (freshStringAux lm  avoid sugg) avoid
-  [+] (length (freshStringAux lm avoid sugg) 
+  [+] (length (freshStringAux lm avoid sugg)
       = (length (shead sugg) + lm)%nat).
 Proof.
   unfold freshString.
@@ -277,7 +278,7 @@ Proof.
   dorn Hfs; cpx.
   fold (freshString avoid sugg).
   fold (freshString avoid sugg) in Hfs.
-  assert (length (shead sugg) + 
+  assert (length (shead sugg) +
       S (lmax (map length avoid) - length (shead sugg))
   > (lmax (map length avoid))) as XX by omega.
   rewrite <- Hfs in XX.
@@ -285,10 +286,10 @@ Proof.
   apply lmaxSpecLen in Hc.
   omega.
 Qed.
-  
+
 Lemma StringVar : VarType.
 Proof.
-  eapply Build_VarType with 
+  eapply Build_VarType with
       (typ:=string)
       (fresh:=freshString).
   - exact string_dec.
@@ -299,7 +300,7 @@ Qed.
 (* only commented code below *)
 (*
 Fixpoint FreshDistinctRenListList
-  {T :Type} (ft : FreshType T) 
+  {T :Type} (ft : FreshType T)
   (llv : list (list T))
   (lvAvoid :list T)
   {struct llv}
@@ -313,18 +314,18 @@ match  llv with
 end.
 
 Lemma FreshDistRenLLSpec: forall
-  {T :Type} (ft : FreshType T) 
+  {T :Type} (ft : FreshType T)
   (llv : list (list T))
   (lvAvoid :list T),
   let llsw := (FreshDistinctRenListList ft llv lvAvoid) in
   let rangeVars := flat_map (@ALRange _ _) llsw in
-  no_repeats rangeVars 
+  no_repeats rangeVars
   # disjoint rangeVars lvAvoid
   # map (@ALDom _ _) llsw = llv.
 Proof.
   induction llv as [|lvh lvtl Hind]; cpx;[].
   intros. subst llsw. subst rangeVars.
-  specialize 
+  specialize
     (Hind (ALRange (FreshDistinctRenamings ft  lvh lvAvoid) ++ lvAvoid)).
   pose proof (FreshDistRenSpec ft lvh lvAvoid) as XXh.
   allsimpl. exrepnd.
@@ -335,18 +336,18 @@ Proof.
 Qed.
 
 Lemma FreshDistRenLLSpec2: forall
-  {T :Type} (ft : FreshType T) 
+  {T :Type} (ft : FreshType T)
   (llv : list (list T))
   (lvAvoid :list T),
   let llsw := (FreshDistinctRenListList ft llv lvAvoid) in
   let rangeVars := flat_map (@ALRange _ _) llsw in
-  no_repeats rangeVars 
+  no_repeats rangeVars
   # disjoint rangeVars lvAvoid
   # flat_map (@ALDom _ _) llsw = flatten llv.
 Proof.
   induction llv as [|lvh lvtl Hind]; cpx;[].
   intros. subst llsw. subst rangeVars.
-  specialize 
+  specialize
     (Hind (ALRange (FreshDistinctRenamings ft  lvh lvAvoid) ++ lvAvoid)).
   pose proof (FreshDistRenSpec ft lvh lvAvoid) as XXh.
   allsimpl. exrepnd.
@@ -356,8 +357,8 @@ Proof.
   - f_equal; cpx.
 Qed.
 Ltac AddFDLLSpec :=
-  let FdSpec := fresh "FdSpec" in 
-  let FdLL := fresh "FdLL" in 
+  let FdSpec := fresh "FdSpec" in
+  let FdLL := fresh "FdLL" in
   match goal with
   [ |- context [FreshDistinctRenListList ?ft ?llv ?lvA] ]
     => pose proof (FreshDistRenLLSpec ft llv lvA) as FdSpec;

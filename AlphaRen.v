@@ -23,20 +23,21 @@
 
 *)
 Require Export AlphaEqProps.
+Require Import Omega.
 Set Implicit Arguments.
 
 (* [lVars] is explicitly a function on [vc].
     the typechecker will then happily export
     the transport in the [pvleaf] clause of [pRenBinders]. *)
-Definition lVars {G : CFGV} 
+Definition lVars {G : CFGV}
   ( vc  : VarSym G) := list (vType vc).
-  
+
 (** renames all binding variables
-    to distinct ones that are not 
+    to distinct ones that are not
     in [lvAvoid] *)
-Fixpoint pRenBinders {G : CFGV} 
+Fixpoint pRenBinders {G : CFGV}
   { vc  : VarSym G}
-  {gs : (GSym G)} 
+  {gs : (GSym G)}
   (lvAvoid : lVars vc)
   (p : Pattern gs)
    {struct p} : Pattern gs  :=
@@ -46,27 +47,27 @@ match p in Pattern gs return Pattern gs with
                     (match (DeqVarSym vc vcc) with
                     | left eqq => (vFreshVar (transport eqq lvAvoid) var)
                     | right _ => var
-                    end) 
+                    end)
 | pnode p mix => pnode p (mRenBinders lvAvoid mix)
 | embed p t => embed p t
 end
-with mRenBinders {G : CFGV} 
+with mRenBinders {G : CFGV}
   { vc  : VarSym G}
-  {lgs : list (bool * GSym G)} 
+  {lgs : list (bool * GSym G)}
   (lvAvoid : list (vType vc))
    (pts : Mixture lgs)
-   {struct pts} : Mixture lgs  := 
+   {struct pts} : Mixture lgs  :=
 match pts with
 | mnil => mnil
-| mtcons _ _ ph ptl =>  mtcons ph (mRenBinders lvAvoid ptl)
-| mpcons _ _ ph ptl => let phr := (pRenBinders lvAvoid ph) in
-                       let phrb := pBndngVars vc phr in
-                       mpcons phr  
+| mtcons ph ptl =>  mtcons ph (mRenBinders lvAvoid ptl)
+| mpcons ph ptl => let phr := (pRenBinders lvAvoid ph) in
+                      let phrb := pBndngVars vc phr in
+                       mpcons phr
                               (mRenBinders (lvAvoid ++ phrb) ptl)
 end.
 
 
-Lemma RenBindersSpec : forall {G : CFGV} (vc  : VarSym G), 
+Lemma RenBindersSpec : forall {G : CFGV} (vc  : VarSym G),
 (   forall (s : GSym G) (nt : Term s), True)
 *
 (   forall (s : GSym G) (pt : Pattern s)  (lvAvoid : lVars vc),
@@ -81,10 +82,10 @@ Lemma RenBindersSpec : forall {G : CFGV} (vc  : VarSym G),
     no_repeats (mBndngVars vc mr)
     # disjoint (mBndngVars vc mr) lvAvoid
 ).
-Proof. 
+Proof.
  intros. GInduction; cpx;[|].
 - Case "pvleaf".  allsimpl. intros.
-  dands; rewrite DeqSym; ddeq; subst; 
+  dands; rewrite DeqSym; ddeq; subst;
   allsimpl; try constructor; cpx.
   repeat (disjoint_reasoning).
   apply vFreshVarSpec.
@@ -99,7 +100,7 @@ Proof.
 Qed.
 
 
-Lemma RenBindersSpec2 : forall {G : CFGV} (vc  : VarSym G),  
+Lemma RenBindersSpec2 : forall {G : CFGV} (vc  : VarSym G),
 (   forall (s : GSym G) (nt : Term s), True)
 *
 (   forall (s : GSym G) (pt : Pattern s)  (lvAvoid : lVars vc),
@@ -116,7 +117,7 @@ Proof.
   intros; GInduction; allsimpl; cpx;[|]; intros; f_equal; cpx.
 Qed.
 
-Lemma RenBindersSpec3 : forall {G : CFGV} (vc  : VarSym G),  
+Lemma RenBindersSpec3 : forall {G : CFGV} (vc  : VarSym G),
 (   forall (s : GSym G) (nt : Term s), True)
 *
 (   forall (s : GSym G) (pt : Pattern s)  (lvAvoid : lVars vc),
@@ -145,10 +146,10 @@ Fixpoint mSwapTermEmbed
      : Mixture lgs  :=
 match pts with
 | mnil => mnil
-| mtcons _ _ th ttl => 
+| mtcons _ _ th ttl =>
     mtcons (tSwap th (lhead sw))
            (mSwapTermEmbed ttl (tail sw))
-| mpcons _ _ ph ptl => 
+| mpcons _ _ ph ptl =>
     mpcons (pSwapEmbed ph  (lhead sw))
            (mSwapTermEmbed ptl  (tail sw))
 end.
@@ -164,15 +165,15 @@ Fixpoint mLSwapTermEmbed
      : Mixture lgs  :=
 match pts with
 | mnil => mnil
-| mtcons _ _ th ttl => 
+| mtcons th ttl =>
     mtcons (tSwap th (combine (lhead llbvOld) (lhead llbvNew)))
            (mLSwapTermEmbed ttl (tail llbvOld) (tail llbvNew))
-| mpcons _ _ ph ptl => 
+| mpcons ph ptl =>
     mpcons (pSwapEmbed ph (combine (lhead llbvOld) (lhead llbvNew)))
            (mLSwapTermEmbed ptl (tail llbvOld) (tail llbvNew))
 end.
 
-Definition nodeRenAlphaAux 
+Definition nodeRenAlphaAux
    {G : CFGV} {vc : VarSym G}
    {mp : MixtureParam}
    (lln : list (list nat))
@@ -191,13 +192,13 @@ Definition nodeRenAlphaAux
 
 
 Fixpoint tRenAlpha {G : CFGV} {vc : VarSym G}
-  {gs : (GSym G)} (pt : Term gs) 
+  {gs : (GSym G)} (pt : Term gs)
    (lvAvoid : list (vType vc))
    {struct pt} :  Term gs :=
 match pt in Term gs return Term gs with
-| tleaf a b => tleaf a b 
+| tleaf a b => tleaf a b
 | vleaf vcc var => vleaf vcc var
-| tnode p mix => tnode p 
+| tnode p mix => tnode p
       ( let rmix := mRenAlpha mix lvAvoid in
         nodeRenAlphaAux (bndngPatIndices p) rmix lvAvoid
         )
@@ -217,13 +218,13 @@ with mRenAlpha {G : CFGV} {vc : VarSym G}
   {lgs : list (bool * GSym G)} (pts : Mixture lgs)
   (lvAvoid : list (vType vc))
  {struct pts}
-      : Mixture lgs  := 
+      : Mixture lgs  :=
 match pts in Mixture lgs return Mixture lgs with
 | mnil  => mnil
-| mtcons _ _ th ttl => 
+| mtcons th ttl =>
         mtcons (tRenAlpha th lvAvoid)
                (mRenAlpha ttl lvAvoid)
-| mpcons _ _ ph ptl =>
+| mpcons ph ptl =>
         mpcons  (pRenAlpha ph lvAvoid)
                 (mRenAlpha ptl lvAvoid)
 end.
@@ -232,12 +233,12 @@ end.
 Definition AvRenaming {G : CFGV} {vc : VarSym G}
 (lvA : list (vType vc)) (sw : Swapping vc)
 := no_repeats (ALRange sw)
-    # disjoint (ALDom sw) (ALRange sw) 
+    # disjoint (ALDom sw) (ALRange sw)
     # disjoint (ALRange sw) lvA .
 
 Lemma AvRenamingSubset : forall
    {G : CFGV} {vc : VarSym G}
-(lvl lvr : list (vType vc)) 
+(lvl lvr : list (vType vc))
 (sw : Swapping vc),
 subset lvr lvl
 -> AvRenaming lvl sw
@@ -259,12 +260,12 @@ Lemma ndRenAlAxSpecDisjAux : forall
   (lvA : list (vType vc)),
   disjoint (mAlreadyBndBinders vc pts) lvA
   -> lForall no_repeats llbvNew
-  -> disjoint (flatten llbvNew) (lvA ++ 
+  -> disjoint (flatten llbvNew) (lvA ++
           mAllButBinders vc pts ++ flatten llbvOld)
   -> map (@length _) llbvOld =  map (@length _) llbvNew
   -> length llbvOld = length mp
   -> disjoint (mAlreadyBndBinders vc pts ++ mBndngVars vc pts) lvA
-  -> disjoint (mBndngVarsDeep vc (mLSwapTermEmbed pts llbvOld llbvNew)) 
+  -> disjoint (mBndngVarsDeep vc (mLSwapTermEmbed pts llbvOld llbvNew))
              lvA.
 Proof.
   induction pts; cpx;[|].
@@ -275,7 +276,7 @@ Proof.
   inverts H4a.
   allrw no_repeats_app.
   repeat (disjoint_reasoning).
-  + GC. 
+  + GC.
     apply tSwapBndngVarsDisjoint; cpx;
     repeat(disjoint_reasoning).
   + allsimpl. exrepnd.
@@ -303,16 +304,16 @@ Lemma mRenBindersSpec3 : forall
    (pts : Mixture mp)
    (lln : list (list nat))
    (lvAvoid : list (vType vc)),
-   validBsl (length mp) lln 
-  -> 
+   validBsl (length mp) lln
+  ->
 lForall no_repeats
   (lBoundVars vc lln (mRenBinders (lvAvoid) pts)).
 Proof.
   intros.
   pose proof  ((mcase (RenBindersSpec vc)) _ pts lvAvoid)  as Hs.
   simpl in Hs.
-  repnd. 
-  rewrite mBndngVarsAsNth in Hs0. clear Hs. 
+  repnd.
+  rewrite mBndngVarsAsNth in Hs0. clear Hs.
   rw (@lForallSame (list (vType vc))).
   unfold lBoundVars.
   introv Hin.
@@ -347,14 +348,14 @@ Theorem renBindersSameLength: forall
 (   forall (s : GSym G) (nt : Term s), True)
 *
 (   forall (s : GSym G) (pt : Pattern s) (lvA : lVars vc),
-    length (pBndngVars vc pt) 
+    length (pBndngVars vc pt)
       = length (pBndngVars  vc (pRenBinders lvA pt))
 )
 *
-(   forall (l : list (bool # GSym G)) (m : Mixture l) 
+(   forall (l : list (bool # GSym G)) (m : Mixture l)
     (lvA : lVars vc)
     (nn : nat),
-    length (getBVarsNth vc m nn) = 
+    length (getBVarsNth vc m nn) =
         length (getBVarsNth vc (mRenBinders lvA m) nn)
 ).
 Proof.
@@ -380,7 +381,7 @@ Qed.
 
 Lemma renBindersLBVLenSame :
 forall {G : CFGV} {vc : VarSym G}
-(l : list (bool # GSym G)) (pts : Mixture l) 
+(l : list (bool # GSym G)) (pts : Mixture l)
     (lvA : lVars vc)
     (lln : list (list nat)),
 map (@length _) (lBoundVars vc lln pts) =
@@ -392,7 +393,7 @@ Proof.
   dands; cpx.
 Qed.
 
-Hint Resolve (fun G vc => mcase (@ bindersAllvarsSubset G vc)) 
+Hint Resolve (fun G vc => mcase (@ bindersAllvarsSubset G vc))
  lBoundVarsmBndngVars :
   SetReasoning.
 
@@ -401,26 +402,26 @@ Hint Resolve (fun G vc => mcase (@ bindersAllvarsSubset G vc))
 
 
 
-Lemma ndRenAlAxSpecDisj : forall 
+Lemma ndRenAlAxSpecDisj : forall
   {G : CFGV} {vc  : VarSym G}
    {mp : MixtureParam}
    (pts : Mixture mp)
    (lln : list (list nat))
    (lvAvoid : list (vType vc)),
-   validBsl (length mp) lln 
+   validBsl (length mp) lln
   -> length lln = length mp
   -> disjoint (mAlreadyBndBinders vc pts) lvAvoid
-  -> disjoint (mBndngVarsDeep vc (nodeRenAlphaAux lln pts lvAvoid)) 
+  -> disjoint (mBndngVarsDeep vc (nodeRenAlphaAux lln pts lvAvoid))
              lvAvoid.
 Proof.
   introv Hnr Hlen Hdis.
   unfold nodeRenAlphaAux.
   cases_ifd Hdddd; cpx;
-    [ apply disjointDeepShallowPlusAlready; 
+    [ apply disjointDeepShallowPlusAlready;
       repeat (disjoint_reasoning) |].
   pose proof ((mcase (RenBindersSpec vc)) _ pts (lvAvoid ++ mAllVars pts))  as Hs.
   simpl in Hs. exrepnd.
-  apply ndRenAlAxSpecDisjAux; 
+  apply ndRenAlAxSpecDisjAux;
   try rewrite <- (mcase (RenBindersSpec2 vc));
   try rewrite <- (mcase (RenBindersSpec3 vc)); cpx.
   - apply mRenBindersSpec3; cpx.
@@ -449,20 +450,20 @@ Lemma RenAlphaAvoid : forall {G : CFGV} {vc  : VarSym G},
       disjoint (pAlreadyBndBinders vc (pRenAlpha pta lvA)) lvA)
 
    *
-  (forall (l : MixtureParam) (ma: Mixture l) 
+  (forall (l : MixtureParam) (ma: Mixture l)
   (lvA : list (vType vc)),
       disjoint (mAlreadyBndBinders vc (mRenAlpha ma lvA)) lvA)).
 Proof.
-intros. GInduction; intros; cpx; 
+intros. GInduction; intros; cpx;
   try (allsimpl; repeat (disjoint_reasoning); cpx; fail);[].
   Case "tnode".
-  allsimpl. 
+  allsimpl.
   specialize (H lvA).
   remember (mRenAlpha m lvA) as pts.
   apply ndRenAlAxSpecDisj; auto.
   - rewrite length_pRhsAugIsPat.
     apply bndngPatIndicesValid2; auto.
-    
+
   - unfold bndngPatIndices.
     unfold tpRhsAugIsPat. unfold prhsIsBound.
     rw combine_length.
@@ -472,24 +473,24 @@ intros. GInduction; intros; cpx;
 Qed.
 
 
-Theorem lbShallowNoChange: forall 
+Theorem lbShallowNoChange: forall
   {G : CFGV} {vc : VarSym G},
 (   forall (s : GSym G) (nt : Term s), True)
 *
-(   forall (s : GSym G) (pt : Pattern s) 
+(   forall (s : GSym G) (pt : Pattern s)
     (lvA : list (vType vc)),
     pBndngVars vc pt = pBndngVars  vc (pRenAlpha pt lvA)
 )
 *
-(   forall (l : list (bool # GSym G)) (m : Mixture l) 
+(   forall (l : list (bool # GSym G)) (m : Mixture l)
     (lvA : list (vType vc))
     (nn : nat),
-    getBVarsNth vc m nn = @getBVarsNth 
+    getBVarsNth vc m nn = @getBVarsNth
                             _ vc _ (mRenAlpha m lvA) nn
 ).
- intros. 
+ intros.
   GInduction; allsimpl; introns Hyp; intros; cpx;[ | | ].
-  - Case "pnode". simpl. simpl pBndngVars. 
+  - Case "pnode". simpl. simpl pBndngVars.
     rewrite mBndngVarsAsNth.
     rewrite mBndngVarsAsNth.
     autorewrite with fast.
@@ -542,7 +543,7 @@ Lemma mLSwapTermEmbedSameNthBinder : forall
    (m : Mixture mp)
    (lla llb : list (list (vType vc)))
    (nn : nat),
-    getBVarsNth vc m nn = getBVarsNth 
+    getBVarsNth vc m nn = getBVarsNth
                              vc (mLSwapTermEmbed m lla llb) nn.
 Proof.
   induction m; cpx; intros ; destruct nn; allsimpl; cpx.
@@ -562,15 +563,15 @@ Lemma pRenBindersAlpha : forall {G : CFGV} {vc : VarSym G},
   (lvA : list (vType vc)),
   (forall b s, LIn (b,s) mp -> b= true)
   -> let maR := mRenBinders lvA ma in
-    lAlphaEqAbs (MakeAbstractions vc ma llbv) 
+    lAlphaEqAbs (MakeAbstractions vc ma llbv)
                 (MakeAbstractions vc maR llbv))).
 Proof.
-intros. 
+intros.
 GInduction; cpx; allsimpl;
   try (econstructor; eauto with Alpha; fail).
 - Case "pnode". introns Hyp.
   allsimpl. constructor.
-  unfold MakeAbstractionsPNode.  
+  unfold MakeAbstractionsPNode.
   apply Hyp.
   introv Hin.
   apply in_map_iff in Hin; exrepnd; cpx.
@@ -590,7 +591,7 @@ Proof.
   apply lBoundVarsSameifNth.
   apply mLSwapTermEmbedSameNthBinder.
 Qed.
-  
+
 
 Definition swapEmbedAbs {G : CFGV} {vc : VarSym G}
            (a : Abstraction G vc)
@@ -608,7 +609,7 @@ Definition swapEmbedLAbs {G : CFGV} {vc : VarSym G}
 map (fun x => swapEmbedAbs x sw) la.
 
 Lemma MakeLAbsSwapCommute:
-forall {G : CFGV} {vc : VarSym G} (mp : MixtureParam) 
+forall {G : CFGV} {vc : VarSym G} (mp : MixtureParam)
   (sw : Swapping vc) (m : Mixture mp)
   (lbv : list (lVars vc)),
 swapEmbedLAbs (MakeAbstractions vc m lbv) sw =
@@ -628,8 +629,8 @@ Lemma ndRenAlAxAlpha : forall
    (m : Mixture mp)
    (lln : list (list nat))
    (lvA : list (vType vc)),
-   validBsl (length mp) lln 
-  -> 
+   validBsl (length mp) lln
+  ->
 lAlphaEqAbs (MakeAbstractionsTNodeAux vc lln m)
   (MakeAbstractionsTNodeAux vc lln (nodeRenAlphaAux lln m lvA)).
 Proof.
@@ -639,28 +640,28 @@ Proof.
   cases_ifd Hdddd; cpx; eauto with Alpha;[]; clear Hddddf.
   rewrite <- mLSwapTermEmbedSameLBV.
   pose proof (renBindersLBVLenSame m (lvA ++ mAllVars m) lln) as Hlen.
-  pose proof (@mRenBindersSpec3 G vc 
+  pose proof (@mRenBindersSpec3 G vc
       mp m lln (lvA ++ mAllVars m)) as Hnr.
   apply Hnr in Hv.
   clear Hnr.
-  pose proof 
-    ((mcase (RenBindersSpec vc)) _ 
+  pose proof
+    ((mcase (RenBindersSpec vc)) _
       m (lvA ++ mAllVars m))  as Hd.
   simpl in Hd.
   repnd. clear Hd0.
   assert (
-      disjoint 
-        (flatten (lBoundVars vc lln 
+      disjoint
+        (flatten (lBoundVars vc lln
           (mRenBinders (lvA ++ mAllVars m) m)))
        (lvA ++ (flatten (lBoundVars vc lln m)))
     ) as Hld by
     (apply (subset_disjointLR Hd); auto;
     [ eauto with SetReasoning |
     apply subset_app_lr; eauto 2 with SetReasoning]).
-    
+
   assert (
-      disjoint 
-        (flatten (lBoundVars vc lln 
+      disjoint
+        (flatten (lBoundVars vc lln
           (mRenBinders (lvA ++ mAllVars m) m)))
        (lvA ++ (mAllVars m))
     ) as Had by
@@ -670,7 +671,7 @@ Proof.
   repeat disjoint_reasoning.
   clear Had0 Hld0.
   remember (lBoundVars vc lln m) as lbva.
-  remember (lBoundVars vc lln 
+  remember (lBoundVars vc lln
     (mRenBinders (lvA ++ mAllVars m) m)) as lbvb.
   applydup map_eq_length_eq in Hlen.
   clear Heqlbvb.
@@ -683,7 +684,7 @@ Proof.
   clear lln lvA.
   induction m as [ | ? ? ph ptl Hind| ? ? ph ptl Hind]; cpx.
 - allsimpl. intros. constructor; cpx.
-  + destruct lbva as [|la lvba]; allsimpl; 
+  + destruct lbva as [|la lvba]; allsimpl;
     destruct lbvb as [|lb lbvv];
     inverts Hlen0;
     autorewrite with fast; simpl;
@@ -718,7 +719,7 @@ Proof.
    ).
 
 
-   *  destruct lbva as [|la lvba]; allsimpl; 
+   *  destruct lbva as [|la lvba]; allsimpl;
       destruct lbvb as [|lb lbvv];
       inverts Hlen0;
       autorewrite with fast; simpl;
@@ -734,7 +735,7 @@ Proof.
       [unfolds_base; simpl; dands; cpx;
       autorewrite with fast;
       repeat(disjoint_reasoning) |].
-   
+
       rewrite (pcase swap_app).
       autorewrite with slow; try congruence;
       cpx; repeat (disjoint_reasoning);
@@ -744,8 +745,8 @@ Proof.
      apply alphaEqSym.
   eapply alphaEqTransitive.
     instantiate (1 :=
-        (pSwap (pRenBinders lv ph) 
-            (combine (lhead lbva) (lhead lbvb))) 
+        (pSwap (pRenBinders lv ph)
+            (combine (lhead lbva) (lhead lbvb)))
    ).
      apply  (pcase (@pAlphaSwapEmSwap G vc)).
      apply alphaEqSym.
@@ -772,10 +773,10 @@ Lemma RenAlphaAlpha : forall {G : CFGV} {vc : VarSym G},
   (llbv : list (list (vType vc)))
   (lvA : list (vType vc)),
   let maR := mRenAlpha ma lvA in
-    lAlphaEqAbs (MakeAbstractions vc ma llbv) 
+    lAlphaEqAbs (MakeAbstractions vc ma llbv)
                 (MakeAbstractions vc maR llbv))).
 Proof.
-intros. GInduction; intros; cpx; 
+intros. GInduction; intros; cpx;
   try (econstructor; eauto; fail);[| |].
 
 - Case "tnode".
@@ -783,7 +784,7 @@ intros. GInduction; intros; cpx;
   constructor.
   unfold MakeAbstractionsTNode.
   unfold nodeRenAlphaAux.
-  
+
   eapply (alphaEqTransitive);
   [ |apply ndRenAlAxAlpha with (lvA0 := lvA); eauto].
   unfold MakeAbstractionsTNodeAux.
@@ -812,8 +813,8 @@ Qed.
 Ltac addRenSpec :=
 match goal with
 [ |- context [@tRenAlpha ?G ?vc ?gs ?a ?lv] ]
-  =>  let Hala := fresh "Hal" a in 
-      let Hdis := fresh "Hdis" a in 
+  =>  let Hala := fresh "Hal" a in
+      let Hdis := fresh "Hdis" a in
       pose proof ((tcase (@RenAlphaAlpha G vc))
               gs a lv) as Hala;
       pose proof ((tcase (@RenAlphaAvoid G vc))
@@ -823,21 +824,21 @@ end.
 Lemma RenAlphaNoChange : forall {G : CFGV} {vc : VarSym G},
 (  (forall (s : GSym G) (ta : Term s)
   (lvA : list (vType vc)),
-    disjoint (tBndngVarsDeep vc ta) lvA 
+    disjoint (tBndngVarsDeep vc ta) lvA
       -> ta = (tRenAlpha ta lvA))
    *
   (forall (s : GSym G) (pta : Pattern s)
   (lvA : list (vType vc)),
-    disjoint (pBndngVarsDeep vc pta) lvA 
+    disjoint (pBndngVarsDeep vc pta) lvA
       -> pta = (pRenAlpha pta lvA))
    *
   (forall (l : MixtureParam) (ma: Mixture l)
   (lvA : list (vType vc)),
-    disjoint (mBndngVarsDeep vc ma) lvA 
+    disjoint (mBndngVarsDeep vc ma) lvA
     -> ma = mRenAlpha ma lvA)).
 Proof.
   intros.
-  GInduction; introns Hyp; allsimpl; 
+  GInduction; introns Hyp; allsimpl;
   try (f_equal; cpx; fail);[ | | ].
 
 - Case "tnode". f_equal.
@@ -891,7 +892,7 @@ Proof.
   GInduction; auto; introns Hyp; intros; allsimpl ; auto.
 
 - Case "pembed". f_equal.
-  
+
 simpl. rewrite DeqSym. symmetry. rewrite DeqSym.
   destruct_head_match; try subst;  cpx.
 
@@ -899,13 +900,13 @@ simpl. rewrite DeqSym. symmetry. rewrite DeqSym.
   destruct_head_match; try subst;  cpx.
 
 - unfold swapLVar. rw map_app.
-  unfold swapLVar in Hyp0. 
-  unfold swapLVar in Hyp. 
+  unfold swapLVar in Hyp0.
+  unfold swapLVar in Hyp.
   f_equal; cpx.
 
 - unfold swapLVar. rw map_app.
-  unfold swapLVar in Hyp0. 
-  unfold swapLVar in Hyp. 
+  unfold swapLVar in Hyp0.
+  unfold swapLVar in Hyp.
   f_equal; cpx.
 Qed.
 *)
@@ -917,7 +918,7 @@ Lemma swapDisjChain : forall  {G : CFGV} {vc : VarSym G}
     -> length vs = length vsb
     -> no_repeats vs
     -> no_repeats vsb
-    -> 
+    ->
   ((forall (gs : GSym G) (t : Term gs), True)
   *
   (forall (gs : GSym G) (t : Pattern gs),
@@ -939,7 +940,7 @@ Proof.
   - Case "vleaf". simpl. f_equal. rewrite DeqSym. symmetry.  rewrite DeqSym.
     destruct_head_match; cpx.
     subst.
-    allsimpl. symmetry. 
+    allsimpl. symmetry.
     rewrite swapVarNoChange; allsimpl;
     repeat(disjoint_reasoning); cpx.
     allrewrite (@DeqTrue (VarSym G)); allsimpl;
@@ -970,7 +971,7 @@ Qed.
 
 (*
 Lemma alphaSwapEmbedCongr : forall {G : CFGV} {vc : VarSym G},
-( 
+(
   (forall (s : GSym G) (a b : Term s), tAlphaEq vc a b -> True)
    *
   (forall (s : GSym G),
@@ -981,7 +982,7 @@ Lemma alphaSwapEmbedCongr : forall {G : CFGV} {vc : VarSym G},
   (EquiVariantRelSame (@swapEmbedLAbs G vc) (@lAlphaEqAbs G vc))
 ).
 Proof.
-  intros. GAlphaInd; introns Hyp; intros; 
+  intros. GAlphaInd; introns Hyp; intros;
   allsimpl; try (econstructor; eauto with Alpha; fail);[ | |].
 - Case "pembed". constructor.
   apply alphaEquiVariant; eauto.

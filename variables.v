@@ -25,6 +25,7 @@
 
 
 Require Export list.
+Require Import Omega.
 
 (** printing #  $\times$ #×# *)
 (** printing <=>  $\Leftrightarrow$ #&hArr;# *)
@@ -32,7 +33,7 @@ Require Export list.
 
 (* ------ variables ------ *)
 
-(** We define our variables exactly as that in Software Foundations 
+(** We define our variables exactly as that in Software Foundations
   %  \footnote{\url{http://www.cis.upenn.edu/~bcpierce/sf/}} %.
   Basically, variables are wrappers around numbers.
   We could have defined them as wrappers around any (countably) infinite
@@ -703,33 +704,33 @@ Lemma fresh_distinct_vars_spec :
   forall n lv,
     let op := fresh_distinct_vars n lv in
     (no_repeats op) # (disjoint  op lv) # length(op)=n.
-Proof. induction n as [ | n Hind]; introv. 
-  simpl; split; sp. 
+Proof. induction n as [ | n Hind]; introv.
+  simpl; split; sp.
   allsimpl. pose proof (Hind ((fresh_var lv :: lv))) as Hind1; clear Hind.
-  repnd. split; [| split]. 
-  - constructor; auto. apply disjoint_sym in Hind2. apply Hind2. left. auto. 
-  - apply disjoint_cons_l. split;[ | (apply fresh_var_not_in)]. 
-    apply disjoint_cons_r in Hind2. repnd; auto. 
-  - rewrite Hind1; reflexivity. 
-Qed. 
+  repnd. split; [| split].
+  - constructor; auto. apply disjoint_sym in Hind2. apply Hind2. left. auto.
+  - apply disjoint_cons_l. split;[ | (apply fresh_var_not_in)].
+    apply disjoint_cons_r in Hind2. repnd; auto.
+  - rewrite Hind1; reflexivity.
+Qed.
 
 (**another form of above which can be applied to remembered ops*)
-Lemma fresh_distinct_vars_spec1 : forall n lv op, 
-    (op = fresh_distinct_vars n lv) 
+Lemma fresh_distinct_vars_spec1 : forall n lv op,
+    (op = fresh_distinct_vars n lv)
     -> (no_repeats op) # (disjoint  op lv) # length(op)=n.
-Proof. intros. subst. apply fresh_distinct_vars_spec. 
+Proof. intros. subst. apply fresh_distinct_vars_spec.
 Qed.
 (* end hide *)
 
 (** Another key requirement for a sensible formalization of variables
   is to have an unbounded supply of fresh variables. Hence,
-  we prove the following lemma. 
+  we prove the following lemma.
   % The notation \coqdocnotation{\{\_:\_ $\times$ \_\}} denotes sigma types
   (\coqexternalref{sigT}
   {http://coq.inria.fr/V8.1/stdlib/Coq.Init.Specif}{\coqdocinductive{sigT}})%
   To those who are unfamiliar
   with constructive logic, the following lemma might just
-  say that that for any [n] and [lv], there exists a list [lvn] 
+  say that that for any [n] and [lv], there exists a list [lvn]
   of length [n] of distinct variables  such that the members of [lvn]
   are disjoint from the members of [lv].
 

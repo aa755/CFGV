@@ -35,12 +35,12 @@ Definition SSubstitution {G} (vc : VarSym G):=
 
 (** CatchFileBetweenTagsSSubstAuxEnd *)
 
-Definition SubFilter {G} {vc : VarSym G} 
+Definition SubFilter {G} {vc : VarSym G}
   (sub: SSubstitution vc) (lv : list (vType vc))
     : SSubstitution vc
   := (ALFilter (DeqVtype vc) sub lv).
 
-Definition SubKeepFirst {G} {vc : VarSym G} 
+Definition SubKeepFirst {G} {vc : VarSym G}
   (sub: SSubstitution vc) (lv : list (vType vc))
     : SSubstitution vc
   := (ALKeepFirst (DeqVtype vc) sub lv).
@@ -62,17 +62,17 @@ Fixpoint tSSubstAux {G : CFGV} {vc : VarSym G}
   (gs : (GSym G)) (pt : Term gs)
   (sub : SSubstitution vc) {struct pt} :  Term gs :=
 match pt in Term gs return Term gs with
-| tleaf a b => tleaf a b 
+| tleaf a b => tleaf a b
 | vleaf vcc var =>   match DeqVarSym vc vcc with
-                     | left eqq => 
-                          ALFindDef 
+                     | left eqq =>
+                          ALFindDef
                             (DeqVtype vcc)
-                            (transport eqq sub) 
-                            var 
+                            (transport eqq sub)
+                            var
                             (vleaf vcc var) (* default value*)
                      | right _ => (vleaf vcc var)
                      end
-| tnode p mix => tnode p (mSSubstAux  mix (allBndngVars vc p mix) sub) 
+| tnode p mix => tnode p (mSSubstAux  mix (allBndngVars vc p mix) sub)
 end
 with pSSubstAux {G : CFGV} {vc : VarSym G}
   {gs : (GSym G)} (pt : Pattern gs)
@@ -80,7 +80,7 @@ with pSSubstAux {G : CFGV} {vc : VarSym G}
 match pt with
 | ptleaf a v => ptleaf a v
 | pvleaf vcc var => pvleaf vcc var
-(* patterns do not have internal bindings 
+(* patterns do not have internal bindings
     (members of [PatProd] do not specify binding info).
    Hence the [nil] *)
 | pnode p lpt => pnode p (mSSubstAux lpt [] sub)
@@ -91,14 +91,14 @@ with mSSubstAux {G : CFGV} {vc : VarSym G}
   (lbvars : list (list (vType vc)))
   (sub : SSubstitution vc)
  {struct pts}
-      : Mixture lgs  := 
+      : Mixture lgs  :=
 match pts in Mixture lgs return Mixture lgs with
 | mnil  => mnil
-| mtcons _ _ ph ptl => 
+| mtcons ph ptl =>
               mtcons
                     (tSSubstAux ph (SubFilter sub (lhead lbvars)))
                     (mSSubstAux ptl (tail lbvars) sub)
-| mpcons _ _ ph ptl =>
+| mpcons ph ptl =>
               mpcons
                     (pSSubstAux ph (SubFilter sub (lhead lbvars)))
                     (mSSubstAux ptl (tail lbvars) sub)
@@ -137,8 +137,8 @@ Proof.
 Qed.
 
 Lemma rangeFreeVarsApp :
-  forall sa sb, 
-    rangeFreeVars (sa++sb) 
+  forall sa sb,
+    rangeFreeVars (sa++sb)
     = rangeFreeVars sa ++ rangeFreeVars sb.
 Proof.
   intros.
@@ -162,17 +162,17 @@ Hint Immediate subtractv_subset.
 
 Lemma SSubstAuxTrivial :
      (  (forall (s : GSym G) (t : Term s) (sub : SSubstitution vc),
-            disjoint (tfreevars vc t) (ALDom sub) 
+            disjoint (tfreevars vc t) (ALDom sub)
             -> tSSubstAux t sub = t)
          *
         (forall (s : GSym G) (pt : Pattern s) (sub : SSubstitution vc),
-            disjoint (pfreevars vc pt) (ALDom sub) 
+            disjoint (pfreevars vc pt) (ALDom sub)
             -> pSSubstAux pt sub = pt)
          *
-        (forall (l : list (bool # GSym G)) (m : Mixture l) 
+        (forall (l : list (bool # GSym G)) (m : Mixture l)
             (sub : SSubstitution vc)
             (llva : list (list (vType vc))),
-            disjoint (mfreevars vc m llva) (ALDom sub) 
+            disjoint (mfreevars vc m llva) (ALDom sub)
             -> mSSubstAux m llva sub = m)).
 Proof.
   intros.
@@ -194,7 +194,7 @@ Proof.
 
   - Case "mtcons".
     introv Hp Hm Hdis.
-    allsimpl. unfold SubFilter. 
+    allsimpl. unfold SubFilter.
     allsimpl;
     disjoint_reasoning; f_equal; auto.
     f_equal; auto; apply Hp;
@@ -205,7 +205,7 @@ Proof.
 
   - Case "mpcons".
     introv Hp Hm Hdis.
-    allsimpl. unfold SubFilter. 
+    allsimpl. unfold SubFilter.
     allsimpl;
     disjoint_reasoning; f_equal; auto.
     f_equal; auto; apply Hp;
@@ -222,7 +222,7 @@ Corollary SSubstAuxNilNoChange :
         (forall (s : GSym G) (pt : Pattern s),
              @pSSubstAux _ vc _ pt [] = pt)
          *
-        (forall (l : list (bool # GSym G)) (m : Mixture l) 
+        (forall (l : list (bool # GSym G)) (m : Mixture l)
             (llva : list (list (vType vc))),
             mSSubstAux m llva [] = m)).
 Proof.
@@ -231,21 +231,21 @@ Proof.
   apply_hyp; allsimpl; disjoint_reasoning.
 Qed.
 
-Lemma SSubstAuxSubFilter: 
+Lemma SSubstAuxSubFilter:
 (  (forall (s : GSym G) (t : Term s) (sub : SSubstitution vc) lf,
-      disjoint (tfreevars vc t) lf 
-      -> tSSubstAux t sub 
+      disjoint (tfreevars vc t) lf
+      -> tSSubstAux t sub
           = tSSubstAux t (SubFilter sub lf))
    *
   (forall (s : GSym G) (pt : Pattern s) lf (sub : SSubstitution vc),
-      disjoint (pfreevars vc pt) lf 
-      -> pSSubstAux pt sub 
+      disjoint (pfreevars vc pt) lf
+      -> pSSubstAux pt sub
           = pSSubstAux pt (SubFilter sub lf))
    *
-  (forall (l : list (bool # GSym G)) (m : Mixture l) 
+  (forall (l : list (bool # GSym G)) (m : Mixture l)
       (llva : list (list (vType vc))) lf (sub : SSubstitution vc),
-      disjoint (mfreevars vc m llva) lf 
-      -> mSSubstAux m llva sub 
+      disjoint (mfreevars vc m llva) lf
+      -> mSSubstAux m llva sub
           = mSSubstAux m llva (SubFilter sub lf))).
 Proof.
   intros.
@@ -269,7 +269,7 @@ Proof.
 
 - Case "mtcons".
   introv Hp Hm Hdis.
-  allsimpl. unfold SubFilter. 
+  allsimpl. unfold SubFilter.
   rw ALFilterSwap.
   rw <- ALFilterAppR.
   rw ALFilterAppAsDiff.
@@ -280,7 +280,7 @@ Proof.
 
 - Case "mpcons".
   introv Hp Hm Hdis.
-  allsimpl. unfold SubFilter. 
+  allsimpl. unfold SubFilter.
   rw ALFilterSwap.
   rw <- ALFilterAppR.
   rw ALFilterAppAsDiff.
@@ -290,26 +290,26 @@ Proof.
   rw disjoint_diff_l in Hdis0; auto;fail.
 Qed.
 
-Lemma SSubstAuxBVarsDisjoint: 
+Lemma SSubstAuxBVarsDisjoint:
 (  (forall (s : GSym G) (t : Term s) (sub : SSubstitution vc) lf,
-      disjoint (tBndngVarsDeep vc t) lf 
-      -> disjoint (flat_map (tBndngVarsDeep vc) (ALRange sub)) lf 
+      disjoint (tBndngVarsDeep vc t) lf
+      -> disjoint (flat_map (tBndngVarsDeep vc) (ALRange sub)) lf
       -> disjoint (tBndngVarsDeep vc (tSSubstAux t sub)) lf)
    *
   (forall (s : GSym G) (pt : Pattern s) lf (sub : SSubstitution vc),
-      disjoint (pBndngVarsDeep vc pt) lf 
-      -> disjoint (flat_map (tBndngVarsDeep vc) (ALRange sub)) lf 
+      disjoint (pBndngVarsDeep vc pt) lf
+      -> disjoint (flat_map (tBndngVarsDeep vc) (ALRange sub)) lf
       -> disjoint (pBndngVarsDeep vc (pSSubstAux pt sub)) lf)
    *
-  (forall (l : list (bool # GSym G)) (m : Mixture l) 
+  (forall (l : list (bool # GSym G)) (m : Mixture l)
       (llva : list (list (vType vc))) lf (sub : SSubstitution vc),
-      disjoint (mBndngVarsDeep vc m) lf 
-      -> disjoint (flat_map (tBndngVarsDeep vc) (ALRange sub)) lf 
+      disjoint (mBndngVarsDeep vc m) lf
+      -> disjoint (flat_map (tBndngVarsDeep vc) (ALRange sub)) lf
       -> disjoint (mBndngVarsDeep vc (mSSubstAux m llva sub)) lf)
 ).
 Proof.
   intros. GInduction; cpx.
-  
+
 - Case "vleaf". introv H1d H2d. allsimpl. ddeq; cpx.
   destruct e.
   simpl. unfold ALFindDef. dalfind; cpx.
@@ -355,14 +355,14 @@ Theorem bindersSSubstAuxNoCnange:
 pBndngVars vc pt = pBndngVars  vc (pSSubstAux pt sub)
 )
 *
-(   forall (l : list (bool # GSym G)) (m : Mixture l) 
+(   forall (l : list (bool # GSym G)) (m : Mixture l)
     (sub : SSubstitution vc) (lbv : list (list (vType vc)))
     (nn : nat),
-    getBVarsNth vc m nn = @getBVarsNth 
+    getBVarsNth vc m nn = @getBVarsNth
                             _ vc _ (mSSubstAux m lbv sub) nn
 ).
  GInduction; allsimpl; introns Hyp; intros; cpx;[ | | ].
-  - Case "pnode". simpl. simpl pBndngVars. 
+  - Case "pnode". simpl. simpl pBndngVars.
     rewrite mBndngVarsAsNth.
     rewrite mBndngVarsAsNth.
     autorewrite with fast.
@@ -384,9 +384,9 @@ Lemma  lBoundVarsSameSSubstAux : forall
   (la : list (list nat))
   (lbv : list (list (vType vc))),
 lBoundVars vc la m
-= 
+=
 lBoundVars vc la
- (mSSubstAux m 
+ (mSSubstAux m
     lbv sub).
 Proof.
   intros.
@@ -397,11 +397,11 @@ Qed.
 
 Lemma rangeFreeVarsKeepFirstAppL: forall sub va vb x,
 LIn x (rangeFreeVars
-        (ALKeepFirst (DeqVtype vc) sub 
+        (ALKeepFirst (DeqVtype vc) sub
            va))
 ->
 LIn x (rangeFreeVars
-        (ALKeepFirst (DeqVtype vc) sub 
+        (ALKeepFirst (DeqVtype vc) sub
            (va ++ vb))).
 Proof.
   introv Hin.
@@ -415,14 +415,14 @@ Proof.
   apply ALKeepFirstLin.
   dands; allrw in_app_iff; cpx.
 Qed.
- 
+
 Lemma rangeFreeVarsKeepFirstAppR: forall sub va vb x,
 LIn x (rangeFreeVars
-        (ALKeepFirst (DeqVtype vc) sub 
+        (ALKeepFirst (DeqVtype vc) sub
            vb))
 ->
 LIn x (rangeFreeVars
-        (ALKeepFirst (DeqVtype vc) sub 
+        (ALKeepFirst (DeqVtype vc) sub
            (va ++ vb))).
 Proof.
   introv Hin.
@@ -439,15 +439,15 @@ Qed.
 
 Lemma rangeFreeVarsKeepFirstAppImplies: forall sub va vb x,
 LIn x (rangeFreeVars
-        (ALKeepFirst (DeqVtype vc) sub 
+        (ALKeepFirst (DeqVtype vc) sub
            (va++vb)))
 ->
 (LIn x (rangeFreeVars
-        (ALKeepFirst (DeqVtype vc) sub 
+        (ALKeepFirst (DeqVtype vc) sub
            (va )))
 [+]
 LIn x (rangeFreeVars
-        (ALKeepFirst (DeqVtype vc) sub 
+        (ALKeepFirst (DeqVtype vc) sub
            (vb )))).
 Proof.
   introv Hin.
@@ -458,10 +458,10 @@ Proof.
   rw lin_flat_map; eexists; dands; eauto;
   rw in_map_iff; eexists; dands; eauto.
 Qed.
-  
 
 
-Hint Resolve subset_app_l subset_app_r 
+
+Hint Resolve subset_app_l subset_app_r
 rangeFreeVarsKeepFirstAppL rangeFreeVarsKeepFirstAppR:
  slow.
 (* In the mixture case, the [lln] actually is
@@ -473,24 +473,24 @@ rangeFreeVarsKeepFirstAppL rangeFreeVarsKeepFirstAppR:
     be different on each side of the equality *)
 
 Theorem SSubstAuxAppAwap:
-(   forall (s : GSym G) (nt : Term s) 
+(   forall (s : GSym G) (nt : Term s)
     (suba subb : SSubstitution vc)
     (Hdis : disjoint (ALDom suba)  (ALDom subb)),
-      (tSSubstAux nt (suba ++ subb)) 
+      (tSSubstAux nt (suba ++ subb))
         = (tSSubstAux nt (subb ++ suba))
 )
 *
 ( forall (s : GSym G) (pt : Pattern s) (suba subb : SSubstitution vc)
     (Hdis : disjoint (ALDom suba)  (ALDom subb)),
-       (pSSubstAux pt (suba ++ subb)) 
+       (pSSubstAux pt (suba ++ subb))
           = (pSSubstAux pt (subb ++ suba))
 )
 *
-( forall (l : list (bool # GSym G)) (m : Mixture l) 
-  (lln : list (list (vType vc))) 
+( forall (l : list (bool # GSym G)) (m : Mixture l)
+  (lln : list (list (vType vc)))
   (suba subb : SSubstitution vc)
   (Hdis : disjoint (ALDom suba)  (ALDom subb)),
-     (mSSubstAux m lln (suba ++ subb)) 
+     (mSSubstAux m lln (suba ++ subb))
         = (mSSubstAux m lln (subb ++ suba))
 ).
 Proof.
@@ -524,7 +524,7 @@ try (f_equal; auto; fail);[| |].
   SetReasoning.
 Qed.
 
-Hint Resolve lBoundVarsmBndngVars 
+Hint Resolve lBoundVarsmBndngVars
   (snd bindersSubsetDeep)
   (snd (fst bindersSubsetDeep))
   (mcase bindersAllvarsSubset)
@@ -551,17 +551,17 @@ Qed.
 
 
 Lemma tSSubstAuxSubFilter:
-  forall 
+  forall
   (suba subb: SSubstitution vc)
   (lv : list (vType vc)),
   disjoint lv (rangeFreeVars suba)
-    -> tSSubstAux_sub suba 
+    -> tSSubstAux_sub suba
           (SubFilter subb lv)
        = tSSubstAux_sub suba subb.
 Proof.
   induction suba as [|(v,t) suba Hind];
   introv Hdis ; cpx;[].
-  simpl. 
+  simpl.
   unfold rangeFreeVars in Hdis.
   simpl in Hdis.
   repeat(disjoint_reasoning).
@@ -569,7 +569,7 @@ Proof.
   f_equal. symmetry.
   apply SSubstAuxSubFilter. disjoint_reasoning.
 Qed.
-  
+
 
 (* in the [Mixture] case, [mSSubstAux] is
   applied to 2 different terms.
@@ -592,7 +592,7 @@ Theorem SSubstAuxNestAsApp:
   (Hdis: disjoint (tBndngVarsDeep vc nt)
                   (rangeFreeVars suba)),
   tSSubstAux (tSSubstAux nt suba) subb
-  = tSSubstAux nt 
+  = tSSubstAux nt
           (tSSubstAux_sub suba subb ++ subb)
 )
 *
@@ -601,11 +601,11 @@ Theorem SSubstAuxNestAsApp:
   (Hdis: disjoint (pBndngVarsDeep vc pt)
                   (rangeFreeVars suba)),
   pSSubstAux (pSSubstAux pt suba) subb
-      = pSSubstAux pt 
+      = pSSubstAux pt
           (tSSubstAux_sub suba subb ++ subb)
 )
 *
-( forall (l : list (bool # GSym G)) (m : Mixture l) 
+( forall (l : list (bool # GSym G)) (m : Mixture l)
   (suba subb : SSubstitution vc)
   (llm : list (list (vType vc)))
   (Hdis: disjoint (mBndngVarsDeep vc m ++ (flatten llm))
@@ -704,35 +704,35 @@ Proof.
 Qed.
 
 (* upto alpha equality,
-    this is equivalent to [SSubstAux_nest_swap2] 
+    this is equivalent to [SSubstAux_nest_swap2]
     for [NTerm]. However contrary, it has fewer
     hypotheses, i.e. the hypotheses about
     freshness of bvars of [suba] and [subb]
     are not required here*)
 Theorem SSubstAuxNestSwap:
-( forall (s : GSym G) (nt : Term s) 
+( forall (s : GSym G) (nt : Term s)
   (suba subb : SSubstitution vc)
   (H1dis: disjoint (tBndngVarsDeep vc nt)
-                  (rangeFreeVars suba 
+                  (rangeFreeVars suba
                     ++ rangeFreeVars subb))
-  (H2dis: disjoint (rangeFreeVars suba) 
+  (H2dis: disjoint (rangeFreeVars suba)
                    (ALDom subb))
-  (H3dis: disjoint (rangeFreeVars subb) 
+  (H3dis: disjoint (rangeFreeVars subb)
                    (ALDom suba))
-  (H4dis: disjoint (ALDom suba) 
+  (H4dis: disjoint (ALDom suba)
                    (ALDom subb)),
   tSSubstAux (tSSubstAux nt suba) subb
   = tSSubstAux (tSSubstAux nt subb) suba
 )
 *
-( forall (s : GSym G) (nt : Pattern s) 
+( forall (s : GSym G) (nt : Pattern s)
   (suba subb : SSubstitution vc)
   (H1dis: disjoint (pBndngVarsDeep vc nt)
-                  (rangeFreeVars suba 
+                  (rangeFreeVars suba
                     ++ rangeFreeVars subb))
-  (H2dis: disjoint (rangeFreeVars suba) 
+  (H2dis: disjoint (rangeFreeVars suba)
                    (ALDom subb))
-  (H3dis: disjoint (rangeFreeVars subb) 
+  (H3dis: disjoint (rangeFreeVars subb)
                    (ALDom suba))
   (H4dis: disjoint (ALDom suba)
                    (ALDom subb)),
@@ -740,17 +740,17 @@ Theorem SSubstAuxNestSwap:
   = pSSubstAux (pSSubstAux nt subb) suba
 )
 *
-( forall (mp : MixtureParam) (nt : Mixture mp) 
+( forall (mp : MixtureParam) (nt : Mixture mp)
   (suba subb : SSubstitution vc)
   (llm : list (list (vType vc)))
   (H1dis: disjoint (mBndngVarsDeep  vc nt ++ flatten llm)
-                  (rangeFreeVars suba 
+                  (rangeFreeVars suba
                     ++ rangeFreeVars subb))
-  (H2dis: disjoint (rangeFreeVars suba) 
+  (H2dis: disjoint (rangeFreeVars suba)
                    (ALDom subb))
-  (H3dis: disjoint (rangeFreeVars subb) 
+  (H3dis: disjoint (rangeFreeVars subb)
                    (ALDom suba))
-  (H4dis: disjoint (ALDom suba) 
+  (H4dis: disjoint (ALDom suba)
                    (ALDom subb)),
   mSSubstAux (mSSubstAux nt llm suba) llm subb
   = mSSubstAux (mSSubstAux nt llm subb) llm suba
@@ -779,16 +779,16 @@ Qed.
 
 
 Theorem free_vars_SSubstAux:
-(   forall (s : GSym G) (nt : Term s) 
+(   forall (s : GSym G) (nt : Term s)
     (sub : SSubstitution vc),
     disjoint (tBndngVarsDeep vc nt)
              (rangeFreeVars sub)
-    ->  eqset 
+    ->  eqset
           (tfreevars vc (tSSubstAux nt sub))
-          (   (diff (DeqVtype vc) (ALDom sub) 
-                          (tfreevars vc nt)) 
+          (   (diff (DeqVtype vc) (ALDom sub)
+                          (tfreevars vc nt))
               ++
-              (rangeFreeVars 
+              (rangeFreeVars
                     (SubKeepFirst sub (tfreevars vc nt)))
           )
 )
@@ -796,25 +796,25 @@ Theorem free_vars_SSubstAux:
 ( forall (s : GSym G) (pt : Pattern s) (sub : SSubstitution vc),
   disjoint (pBndngVarsDeep vc pt)
            (rangeFreeVars sub)
-  ->  eqset 
+  ->  eqset
         (pfreevars vc (pSSubstAux pt sub))
-        ( (diff (DeqVtype vc) (ALDom sub) (pfreevars vc pt)) 
+        ( (diff (DeqVtype vc) (ALDom sub) (pfreevars vc pt))
           ++
-              (rangeFreeVars 
+              (rangeFreeVars
                   (SubKeepFirst sub (pfreevars vc pt)))
          )
 )
 *
-( forall (l : list (bool # GSym G)) (m : Mixture l) 
-  (llva : list (list (vType vc))) 
+( forall (l : list (bool # GSym G)) (m : Mixture l)
+  (llva : list (list (vType vc)))
   (sub : SSubstitution vc),
   disjoint (mBndngVarsDeep vc m ++ (flatten llva))
            (rangeFreeVars sub)
-  ->  eqset 
+  ->  eqset
         (mfreevars vc (mSSubstAux m llva sub) llva)
-        ( (diff (DeqVtype vc) (ALDom sub) (mfreevars vc m llva)) 
+        ( (diff (DeqVtype vc) (ALDom sub) (mfreevars vc m llva))
            ++
-              (rangeFreeVars 
+              (rangeFreeVars
                   (SubKeepFirst sub (mfreevars vc m llva)))
          )
 ).
@@ -830,7 +830,7 @@ unfold SubKeepFirst.
     + destruct dd. allsimpl. rewrite DeqTrue.
       allunfold ALFindDef.
     allsimpl. rw diff_cons_r.
-    DALFind Hd;symmetry in HeqHd. 
+    DALFind Hd;symmetry in HeqHd.
     * applydup ALFindSome in HeqHd.
       apply ALInEta in HeqHd0. repnd.
       apply ALFindSomeKeepFirstSingleton in HeqHd.
@@ -844,12 +844,12 @@ unfold SubKeepFirst.
       rw HeqHd. unfold rangeFreeVars; auto.
       simpl. rw app_nil_r. rw memberb_din.
       cases_ifd Hd; cpx;[].
-      rw diff_nil. 
+      rw diff_nil.
       unfold eqset. cpx.
   + rewrite DeqSym. rw <- HeqHdeq. allsimpl.
     rewrite DeqSym. rw <- HeqHdeq.
     autorewrite with fast. unfold eqset; cpx.
-- Case "tnode". 
+- Case "tnode".
   unfold allBndngVars.
   rw <- lBoundVarsSameSSubstAux.
   apply Hyp. disjoint_reasoning; cpx;[].
@@ -862,21 +862,21 @@ unfold SubKeepFirst.
 - Case "mtcons".
    cpx; unfold subtractv;
    allrw diff_app_r; allsimpl.
-  + split. 
+  + split.
     * introv Hin. allrw in_app_iff.
 
       dorn Hin;[ |  apply Hyp0 in Hin;[|];
                     repeat (disjoint_reasoning);
                     [| apply disjoint_flatten_tl; trivial];
                     (rw in_app_iff in Hin;
-                    dorn Hin; cpx;[];  
+                    dorn Hin; cpx;[];
                     right; apply rangeFreeVarsKeepFirstAppR; cpx)].
-  
+
       rw in_diff in Hin; exrepnd.
       apply Hyp in Hin0;
       allrw in_app_iff; exrepnd;
       allrw in_app_iff;allsimpl; autorewrite with fast;
-      repeat (disjoint_reasoning); 
+      repeat (disjoint_reasoning);
       unfold SubFilter; try SetReasoning;[| ].
 
 
@@ -893,13 +893,13 @@ unfold SubKeepFirst.
       SetReasoning.
       rw ALKeepFirstFilterDiff;
       auto.
-    
+
     * introv Hin. allrw in_app_iff.
       dorn Hin;[dorn Hin|];[ | | ].
 
       left. allrw in_diff. exrepnd.
       dands; cpx;[]. unfold SubFilter.
-      apply Hyp. 
+      apply Hyp.
 
 
       repeat(disjoint_reasoning); SetReasoning.
@@ -947,21 +947,21 @@ unfold SubKeepFirst.
 - Case "mpcons". (** exactly same as the mtcons case *)
    cpx; unfold subtractv;
    allrw diff_app_r; allsimpl.
-  + split. 
+  + split.
     * introv Hin. allrw in_app_iff.
 
       dorn Hin;[ |  apply Hyp0 in Hin;[|];
                     repeat (disjoint_reasoning);
                     [| apply disjoint_flatten_tl; trivial];
                     (rw in_app_iff in Hin;
-                    dorn Hin; cpx;[];  
+                    dorn Hin; cpx;[];
                     right; apply rangeFreeVarsKeepFirstAppR; cpx)].
-  
+
       rw in_diff in Hin; exrepnd.
       apply Hyp in Hin0;
       allrw in_app_iff; exrepnd;
       allrw in_app_iff;allsimpl; autorewrite with fast;
-      repeat (disjoint_reasoning); 
+      repeat (disjoint_reasoning);
       unfold SubFilter; try SetReasoning;[| ].
 
 
@@ -978,13 +978,13 @@ unfold SubKeepFirst.
       SetReasoning.
       rw ALKeepFirstFilterDiff;
       auto.
-    
+
     * introv Hin. allrw in_app_iff.
       dorn Hin;[dorn Hin|];[ | | ].
 
       left. allrw in_diff. exrepnd.
       dands; cpx;[]. unfold SubFilter.
-      apply Hyp. 
+      apply Hyp.
 
 
       repeat(disjoint_reasoning); SetReasoning.
@@ -1070,24 +1070,24 @@ End GramVC.
 (*
 Lemma SSubstAuxFVarsDisjoint: (
 (forall (s : GSym G) (t : Term s) (sub : SSubstitution vc) lf,
-    disjoint (tfreevars vc t) lf 
-    -> disjoint (rangeFreeVars sub) lf 
+    disjoint (tfreevars vc t) lf
+    -> disjoint (rangeFreeVars sub) lf
     -> disjoint (tfreevars vc (tSSubstAux t sub)) lf)
  *
 (forall (s : GSym G) (pt : Pattern s) lf (sub : SSubstitution vc),
-    disjoint (pfreevars vc pt) lf 
-    -> disjoint (rangeFreeVars sub) lf 
+    disjoint (pfreevars vc pt) lf
+    -> disjoint (rangeFreeVars sub) lf
     -> disjoint (pfreevars vc (pSSubstAux pt sub)) lf)
  *
-(forall (l : list (bool # GSym G)) (m : Mixture l) 
+(forall (l : list (bool # GSym G)) (m : Mixture l)
     (llva : list (list (vType vc))) lf (sub : SSubstitution vc),
-    disjoint (mfreevars vc m llva) lf 
-    -> disjoint (rangeFreeVars sub) lf 
+    disjoint (mfreevars vc m llva) lf
+    -> disjoint (rangeFreeVars sub) lf
     -> disjoint (mfreevars vc (mSSubstAux m llva sub) llva) lf)
 ).
 Proof.
   intros. GInduction; cpx.
-  
+
 - Case "vleaf". introv H1d H2d. allsimpl.
   rewrite DeqSym in H1d.
   ddeq; allsimpl;[| ddeq]; cpx;[].
