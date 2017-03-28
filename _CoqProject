@@ -1,0 +1,26 @@
+-R . CFGV
+
+./AlphaDecider.v
+./AlphaEqProps.v
+./AlphaEquality.v
+./AlphaRen.v
+./AssociationList.v
+./bin_rels.v
+./CFGV.v
+./eq_rel.v
+./everything.v
+./GVariables.v
+./LetrecEx.v
+./LetrecFEx.v
+./LibTactics.v
+./list.v
+./SSubst.v
+./SubstAuxAlphaEq.v
+./SubstAux.v
+./SwapProps.v
+./Swap.v
+./tactics.v
+./Term.v
+./universe.v
+./UsefulTypes.v
+./variables.v
